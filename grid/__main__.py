@@ -73,9 +73,6 @@ def main():
             name, type, vals = params[-1]
             vals.append(type(x))
 
-    for name, type, vals in params:
-        print("--{}:{} {}".format(name, type, vals))
-
     if not os.path.isdir(args.log_dir):
         os.mkdir(args.log_dir)
 
@@ -86,6 +83,8 @@ def main():
 
     for param in product(*[vals for name, type, vals in params]):
 
+        text = " ".join("{}={}".format(name, val) for val, (name, type, vals) in zip(param, params))
+
         for f in glob.glob("{}/*.pkl".format(args.log_dir)):
             if f not in done_args:
                 a = torch.load(f)
@@ -93,7 +92,7 @@ def main():
                 done_param.add(tuple(getattr(a, name) for name, type, vals in params))
 
         if param in done_param:
-            print('already done')
+            print('[{}] already done'.format(text))
             continue
 
         if args.n_parallel is not None:
@@ -110,7 +109,7 @@ def main():
         cmd = command.format(pickle=fp, **{name: val for val, (name, type, vals) in zip(param, params)})
 
         running.append(subprocess.Popen(re.findall(r'\"[^\"]*\"|\S+', cmd)))
-        print("[{}] {}".format(fn, cmd))
+        print("[{}] {}".format(text, cmd))
         time.sleep(args.sleep)
 
     for x in running:
