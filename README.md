@@ -42,3 +42,8 @@ The results already done are not executed again
 [a=3 b=7] already done
 [a=3 b=8] python example.py --pickle results/05922.pkl --a 3 --b 8
 ```
+
+Example: using slurm and only varying parameter b
+```
+python -m grid --log_dir results --cmd "srun --partition gpu --qos gpu --gres gpu:1 --time 3-00:00:00 --mem 12G --pty python example.py --a 4" --b:int 5 6 7
+```
