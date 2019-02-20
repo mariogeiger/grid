@@ -1,5 +1,6 @@
 # pylint: disable=W0221, C, R, W1202, E1101
 import argparse
+import datetime
 import glob
 import os
 import random
@@ -12,13 +13,17 @@ from itertools import count, product
 import torch
 
 
-def print_outputs(processes):
+def print_outputs(args, processes):
     for text, x in processes:
         for line in x.stdout.readlines():
             print("[{}] {}".format(text, line.decode("utf-8")), end="")
     for text, x in processes:
         for line in x.stderr.readlines():
-            print("ERROR [{}] {}".format(text, line.decode("utf-8")), end="")
+            line = "{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8"))
+            print(line, end="")
+            with open(os.path.join(args.log_dir, "stderr"), 'ta') as f:
+                f.write(line)
+
     for text, x in processes:
         if x.poll() is not None:
             print("[{}] terminated with code {}".format(text, x.poll()))
@@ -69,7 +74,7 @@ def main():
 
         if args.n_parallel is not None:
             while len(running) >= args.n_parallel:
-                print_outputs(running)
+                print_outputs(args, running)
                 running = [(text, x) for text, x in running if x.poll() is None]
                 time.sleep(0.2)
 
@@ -87,7 +92,7 @@ def main():
         time.sleep(args.sleep)
 
     while len(running) > 0:
-        print_outputs(running)
+        print_outputs(args, running)
         running = [(text, x) for text, x in running if x.poll() is None]
         time.sleep(0.2)
 
