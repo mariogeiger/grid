@@ -21,6 +21,7 @@ def print_outputs(args, processes):
         try:
             outs, errs = x.communicate(timeout=0.01)
             for line in outs.split(b'\n'):
+                if len(line) == 0: continue
                 print("[{}] {}".format(text, line.decode("utf-8")))
 
             if len(errs) > 0:
