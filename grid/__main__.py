@@ -89,7 +89,12 @@ def main():
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         running.append((text, p))
         print("[{}] {}".format(text, cmd))
-        time.sleep(args.sleep)
+
+        for _ in range(int(args.sleep / 0.2)):
+            print_outputs(args, running)
+            running = [(text, x) for text, x in running if x.poll() is None]
+            time.sleep(0.2)
+
 
     while len(running) > 0:
         print_outputs(args, running)
