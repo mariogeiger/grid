@@ -15,16 +15,23 @@ import torch
 
 def print_outputs(args, processes):
     for text, x in processes:
-        if x.stdout.readable():
-            for line in x.stdout.read().split(b'\n'):
+        if x.stdout.closed:
+            continue
+
+        try:
+            outs, errs = x.communicate(timeout=0.01)
+            for line in outs.split(b'\n'):
                 print("[{}] {}".format(text, line.decode("utf-8")))
-    for text, x in processes:
-        if x.stderr.readable():
-            for line in x.stderr.read().split(b'\n'):
-                line = "{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8"))
-                print(line)
+
+            if len(errs) > 0:
                 with open(os.path.join(args.log_dir, "stderr"), 'ta') as f:
-                    f.write(line)
+                    for line in errs.split(b'\n'):
+                        line = "{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8"))
+                        print(line)
+                        f.write(line + '\n')
+
+        except subprocess.TimeoutExpired:
+            pass
 
     for text, x in processes:
         if x.poll() is not None:
