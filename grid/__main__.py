@@ -7,36 +7,22 @@ import random
 import re
 import shlex
 import subprocess
+import sys
+import threading
 import time
 from itertools import count, product
 
 import torch
 
 
-def print_outputs(args, processes):
-    for text, x in processes:
-        if x.stdout.closed:
-            continue
+def print_output(out, text, path):
+    for line in iter(out.readline, b''):
+        print("[{}] {}".format(text, line.decode("utf-8")), end="")
 
-        try:
-            outs, errs = x.communicate(timeout=0.01)
-            for line in outs.split(b'\n'):
-                if len(line) == 0: continue
-                print("[{}] {}".format(text, line.decode("utf-8")))
-
-            if len(errs) > 0:
-                with open(os.path.join(args.log_dir, "stderr"), 'ta') as f:
-                    for line in errs.split(b'\n'):
-                        line = "{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8"))
-                        print(line)
-                        f.write(line + '\n')
-
-        except subprocess.TimeoutExpired:
-            pass
-
-    for text, x in processes:
-        if x.poll() is not None:
-            print("[{}] terminated with code {}".format(text, x.poll()))
+        if path is not None:
+            with open(path, 'ta') as f:
+                f.write("{} [{}] {}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8")))
+    out.close()
 
 
 def main():
@@ -84,8 +70,7 @@ def main():
 
         if args.n_parallel is not None:
             while len(running) >= args.n_parallel:
-                print_outputs(args, running)
-                running = [(text, x) for text, x in running if x.poll() is None]
+                running = [x for x in running if x.poll() is None]
                 time.sleep(0.2)
 
         for i in count(random.randint(0, 9999)):
@@ -97,18 +82,24 @@ def main():
         cmd = command.format(pickle=fp, **{name: val for val, (name, type, vals) in zip(param, params)})
 
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        running.append((text, p))
+
+        t = threading.Thread(target=print_output, args=(p.stdout, text, None))
+        t.daemon = True # thread dies with the program
+        t.start()
+        t = threading.Thread(target=print_output, args=(p.stderr, text, os.path.join(args.log_dir, 'stderr')))
+        t.daemon = True # thread dies with the program
+        t.start()
+
+        running.append(p)
         print("[{}] {}".format(text, cmd))
 
         for _ in range(int(args.sleep / 0.2)):
-            print_outputs(args, running)
-            running = [(text, x) for text, x in running if x.poll() is None]
+            running = [x for x in running if x.poll() is None]
             time.sleep(0.2)
 
 
     while len(running) > 0:
-        print_outputs(args, running)
-        running = [(text, x) for text, x in running if x.poll() is None]
+        running = [x for x in running if x.poll() is None]
         time.sleep(0.2)
 
 

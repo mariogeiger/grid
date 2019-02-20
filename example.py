@@ -1,13 +1,17 @@
 # pylint: disable=C,R,E1101
 import argparse
 import os
+import time
 
 import torch
 
 
 def execute(args):
-    print("execute addition")
-    return args.a + args.b
+    for i in range(3):
+        time.sleep(0.5)
+        print("computation {} / 3".format(i + 1), flush=True)  # need flush=True
+
+    return args.a / args.b
 
 
 def main():
