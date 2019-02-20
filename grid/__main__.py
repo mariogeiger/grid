@@ -12,12 +12,24 @@ from itertools import count, product
 import torch
 
 
+def print_outputs(processes):
+    for text, x in processes:
+        for line in x.stdout.readlines():
+            print("[{}] {}".format(text, line.decode("utf-8")), end="")
+    for text, x in processes:
+        for line in x.stderr.readlines():
+            print("ERROR [{}] {}".format(text, line.decode("utf-8")), end="")
+    for text, x in processes:
+        if x.poll() is not None:
+            print("[{}] terminated with code {}".format(text, x.poll()))
+
+
 def main():
     parser = argparse.ArgumentParser("grid")
-    parser.add_argument("--log_dir", type=str, required=True, help="path to a directory")
+    parser.add_argument("log_dir", type=str, help="path to a directory")
+    parser.add_argument("cmd", type=str, help="program to execute in parallel for the grid search")
     parser.add_argument("--n_parallel", type=int, help="maximum parallel instances (infinite by default)")
     parser.add_argument("--sleep", type=float, default=0, help="sleep time between two runs (in seconds)")
-    parser.add_argument("--cmd", type=str, required=True, help="program to execute in parallel for the grid search")
     args, argv = parser.parse_known_args()
 
     command = "{} --pickle {{pickle}}".format(args.cmd)
@@ -57,8 +69,9 @@ def main():
 
         if args.n_parallel is not None:
             while len(running) >= args.n_parallel:
-                running = [x for x in running if x.poll() is None]
-                time.sleep(2)
+                print_outputs(running)
+                running = [(text, x) for text, x in running if x.poll() is None]
+                time.sleep(0.2)
 
         for i in count(random.randint(0, 9999)):
             fn = "{:05d}.pkl".format(i)
@@ -68,12 +81,15 @@ def main():
 
         cmd = command.format(pickle=fp, **{name: val for val, (name, type, vals) in zip(param, params)})
 
-        running.append(subprocess.Popen(shlex.split(cmd)))
+        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        running.append((text, p))
         print("[{}] {}".format(text, cmd))
         time.sleep(args.sleep)
 
-    for x in running:
-        x.wait()
+    while len(running) > 0:
+        print_outputs(running)
+        running = [(text, x) for text, x in running if x.poll() is None]
+        time.sleep(0.2)
 
 
 if __name__ == '__main__':

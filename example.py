@@ -6,6 +6,7 @@ import torch
 
 
 def execute(args):
+    print("execute addition")
     return args.a + args.b
 
 
