@@ -15,14 +15,16 @@ import torch
 
 def print_outputs(args, processes):
     for text, x in processes:
-        for line in x.stdout.read().split(b'\n'):
-            print("[{}] {}".format(text, line.decode("utf-8")), end="")
+        if x.stdout.readable():
+            for line in x.stdout.read().split(b'\n'):
+                print("[{}] {}".format(text, line.decode("utf-8")))
     for text, x in processes:
-        for line in x.stderr.read().split(b'\n'):
-            line = "{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8"))
-            print(line, end="")
-            with open(os.path.join(args.log_dir, "stderr"), 'ta') as f:
-                f.write(line)
+        if x.stderr.readable():
+            for line in x.stderr.read().split(b'\n'):
+                line = "{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8"))
+                print(line)
+                with open(os.path.join(args.log_dir, "stderr"), 'ta') as f:
+                    f.write(line)
 
     for text, x in processes:
         if x.poll() is not None:
