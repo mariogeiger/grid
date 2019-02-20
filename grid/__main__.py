@@ -4,6 +4,7 @@ import glob
 import os
 import random
 import re
+import shlex
 import subprocess
 import time
 from itertools import count, product
@@ -67,7 +68,7 @@ def main():
 
         cmd = command.format(pickle=fp, **{name: val for val, (name, type, vals) in zip(param, params)})
 
-        running.append(subprocess.Popen(re.findall(r'\"[^\"]*\"|\S+', cmd)))
+        running.append(subprocess.Popen(shlex.split(cmd)))
         print("[{}] {}".format(text, cmd))
         time.sleep(args.sleep)
 

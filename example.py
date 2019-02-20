@@ -4,6 +4,7 @@ import os
 
 import torch
 
+
 def execute(args):
     return args.a + args.b
 
