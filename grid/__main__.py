@@ -93,14 +93,11 @@ def main():
         running.append(p)
         print("[{}] {}".format(text, cmd))
 
-        for _ in range(int(args.sleep / 0.2)):
-            running = [x for x in running if x.poll() is None]
-            time.sleep(0.2)
+        time.sleep(args.sleep)
 
 
-    while len(running) > 0:
-        running = [x for x in running if x.poll() is None]
-        time.sleep(0.2)
+    for x in running:
+        x.wait()
 
 
 if __name__ == '__main__':
