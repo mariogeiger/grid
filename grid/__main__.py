@@ -15,10 +15,10 @@ import torch
 
 def print_outputs(args, processes):
     for text, x in processes:
-        for line in x.stdout.readlines():
+        for line in x.stdout.read().split(b'\n'):
             print("[{}] {}".format(text, line.decode("utf-8")), end="")
     for text, x in processes:
-        for line in x.stderr.readlines():
+        for line in x.stderr.read().split(b'\n'):
             line = "{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8"))
             print(line, end="")
             with open(os.path.join(args.log_dir, "stderr"), 'ta') as f:
