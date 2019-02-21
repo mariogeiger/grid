@@ -1,14 +1,8 @@
-# pylint: disable=
+# pylint: disable=C
 import argparse
 import glob
-import os
 
 import torch
-
-
-def tup(args):
-    d = [(key, value) for key, value in args.__dict__.items() if key != 'pickle']
-    return tuple(sorted(d))
 
 
 def main():
@@ -18,24 +12,19 @@ def main():
     args = parser.parse_args()
 
 
-    runs = [torch.load(path) for path in glob.glob("{}/*.pkl".format(args.log_dir))]
     runs = [
         {
             key: value
             for key, value in r.__dict__.items()
             if key != 'pickle'
         }
-        for r in runs
+        for r in [torch.load(path) for path in glob.glob("{}/*.pkl".format(args.log_dir))]
     ]
 
-    keys = {key for r in runs for key in r.keys()}
+    for key in {key for r in runs for key in r.keys()}:
 
-    union = {
-        key: {r[key] if key in r else None for r in runs}
-        for key in keys
-    }
+        values = {r[key] if key in r else None for r in runs}
 
-    for key, values in union.items():
         print("{}: {}".format(key, values))
 
 
