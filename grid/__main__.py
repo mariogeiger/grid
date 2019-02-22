@@ -19,7 +19,7 @@ def print_output(out, text, path):
 
         if path is not None:
             with open(path, 'ta') as f:
-                f.write("{} [{}] {}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8")))
+                f.write("{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8")))
     out.close()
 
 
