@@ -22,6 +22,9 @@ def print_output(out, text, path):
                 f.write("{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8")))
     out.close()
 
+    if path is None:
+        print("[{}] terminated".format(text))
+
 
 def main():
     parser = argparse.ArgumentParser("grid")
