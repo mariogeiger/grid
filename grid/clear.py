@@ -1,4 +1,4 @@
-# pylint: disable=
+# pylint: disable=C
 import argparse
 import glob
 import os

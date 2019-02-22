@@ -1,4 +1,4 @@
-# pylint: disable=
+# pylint: disable=C
 import argparse
 import glob
 import os
@@ -20,30 +20,29 @@ def main():
         return tuple(sorted(d))
 
     done_dst = {
-        tup(args)
-        for args in (torch.load(f)
-        for f in glob.glob("{}/*.pkl".format(args.log_dir_dst)))
+        tup(torch.load(f))
+        for f in glob.glob("{}/*.pkl".format(args.log_dir_dst))
     }
 
     for path_src in glob.glob("{}/*.pkl".format(args.log_dir_src)):
-        args_src = torch.load(path_src)
+        args_src = tup(torch.load(path_src))
 
-        if tup(args_src) in done_dst:
+        if args_src in done_dst:
             print("{} ok".format(path_src))
             continue
 
-        for i in count(random.randint(0, 9999)):
+        for i in count(random.randint(0, 50000)):
             name = "{:05d}.pkl".format(i)
             path_dst = os.path.join(args.log_dir_dst, name)
             if not os.path.isfile(path_dst):
                 break
 
         print("[{}] {} -> {}".format(
-            " ".join("{}={}".format(key, value) for key, value in tup(args_src)),
+            " ".join("{}={}".format(key, value) for key, value in args_src),
             path_src, path_dst))
         os.rename(path_src, path_dst)
 
-        done_dst.add(tup(args_src))
+        done_dst.add(args_src)
 
 
 if __name__ == '__main__':

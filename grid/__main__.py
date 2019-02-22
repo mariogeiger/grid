@@ -1,13 +1,11 @@
-# pylint: disable=W0221, C, R, W1202, E1101
+# pylint: disable=W0221, C, R, W1202, E1101, eval-used
 import argparse
 import datetime
 import glob
 import os
 import random
-import re
 import shlex
 import subprocess
-import sys
 import threading
 import time
 from itertools import count, product
@@ -38,31 +36,31 @@ def main():
     params = []
     for x in argv:
         if x.startswith('--'):
-            name, type = x[2:].split(':')
-            type = eval(type)
-            params.append((name, type, []))
+            name, typ = x[2:].split(':')
+            typ = eval(typ)
+            params.append((name, typ, []))
             command += " --{0} {{{0}}}".format(name)
         else:
-            name, type, vals = params[-1]
-            vals.append(type(x))
+            name, typ, vals = params[-1]
+            vals.append(typ(x))
 
     if not os.path.isdir(args.log_dir):
         os.mkdir(args.log_dir)
 
     done_args = {f: torch.load(f) for f in glob.glob("{}/*.pkl".format(args.log_dir))}
-    done_param = {tuple(getattr(args, name) for name, type, vals in params) for f, args in done_args.items()}
+    done_param = {tuple(getattr(args, name) for name, _typ, vals in params) for f, args in done_args.items()}
 
     running = []
 
-    for param in product(*[vals for name, type, vals in params]):
+    for param in product(*[vals for name, _typ, vals in params]):
 
-        text = " ".join("{}={}".format(name, val) for val, (name, type, vals) in zip(param, params))
+        text = " ".join("{}={}".format(name, val) for val, (name, _typ, vals) in zip(param, params))
 
         for f in glob.glob("{}/*.pkl".format(args.log_dir)):
             if f not in done_args:
                 a = torch.load(f)
                 done_args[f] = a
-                done_param.add(tuple(getattr(a, name) for name, type, vals in params))
+                done_param.add(tuple(getattr(a, name) for name, _typ, vals in params))
 
         if param in done_param:
             print('[{}] already done'.format(text))
@@ -73,21 +71,21 @@ def main():
                 running = [x for x in running if x.poll() is None]
                 time.sleep(0.2)
 
-        for i in count(random.randint(0, 9999)):
+        for i in count(random.randint(0, 50000)):
             fn = "{:05d}.pkl".format(i)
             fp = os.path.join(args.log_dir, fn)
             if not os.path.isfile(fp):
                 break
 
-        cmd = command.format(pickle=fp, **{name: val for val, (name, type, vals) in zip(param, params)})
+        cmd = command.format(pickle=fp, **{name: val for val, (name, _typ, vals) in zip(param, params)})
 
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         t = threading.Thread(target=print_output, args=(p.stdout, text, None))
-        t.daemon = True # thread dies with the program
+        t.daemon = True
         t.start()
         t = threading.Thread(target=print_output, args=(p.stderr, text, os.path.join(args.log_dir, 'stderr')))
-        t.daemon = True # thread dies with the program
+        t.daemon = True
         t.start()
 
         running.append(p)
