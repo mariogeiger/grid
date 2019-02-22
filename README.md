@@ -9,7 +9,7 @@ python setup.py install
 The file `example.py` is a minimal script that can be used with `grid`.
 
 ```
-python -m grid results "python example.py" --a:int 1 2 3 --b:int 5 6 7
+python -m grid results "python example.py" --a 1 2 3 --b 5 6 7
 ```
 All the combination of (1, 2, 3) and (5, 6, 7) are executed in simultaneously
 ```
@@ -52,7 +52,7 @@ All the combination of (1, 2, 3) and (5, 6, 7) are executed in simultaneously
 ```
 
 ```
-python -m grid results "python example.py" --a:int 1 2 3 --b:int 5 6 7 8
+python -m grid results "python example.py" --a 1 2 3 --b 5 6 7 8
 ```
 The results already done are not executed again
 ```

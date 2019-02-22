@@ -36,13 +36,20 @@ def main():
     params = []
     for x in argv:
         if x.startswith('--'):
-            name, typ = x[2:].split(':')
-            typ = eval(typ)
+            if ':' in x:
+                name, typ = x[2:].split(':')
+                typ = eval(typ)
+            else:
+                name = x[2:]
+                typ = None
             params.append((name, typ, []))
             command += " --{0} {{{0}}}".format(name)
         else:
             name, typ, vals = params[-1]
-            vals.append(typ(x))
+            if typ is None:
+                vals.append(eval(x))
+            else:
+                vals.append(typ(x))
 
     if not os.path.isdir(args.log_dir):
         os.mkdir(args.log_dir)
