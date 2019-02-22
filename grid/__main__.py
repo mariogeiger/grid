@@ -47,29 +47,29 @@ def main():
     if not os.path.isdir(args.log_dir):
         os.mkdir(args.log_dir)
 
-    done_args = {f: torch.load(f) for f in glob.glob("{}/*.pkl".format(args.log_dir))}
-    done_param = {tuple(getattr(args, name) for name, _typ, vals in params) for f, args in done_args.items()}
+    done_args = dict()
+    done_param = set()
 
     running = []
 
     for param in product(*[vals for name, _typ, vals in params]):
 
-        text = " ".join("{}={}".format(name, val) for val, (name, _typ, vals) in zip(param, params))
+        if args.n_parallel is not None:
+            while len(running) >= args.n_parallel:
+                running = [x for x in running if x.poll() is None]
+                time.sleep(0.2)
 
         for f in glob.glob("{}/*.pkl".format(args.log_dir)):
             if f not in done_args:
                 a = torch.load(f)
                 done_args[f] = a
-                done_param.add(tuple(getattr(a, name) for name, _typ, vals in params))
+                done_param.add(tuple(getattr(a, name) if hasattr(a, name) else None for name, _typ, vals in params))
+
+        text = " ".join("{}={}".format(name, val) for val, (name, _typ, vals) in zip(param, params))
 
         if param in done_param:
             print('[{}] already done'.format(text))
             continue
-
-        if args.n_parallel is not None:
-            while len(running) >= args.n_parallel:
-                running = [x for x in running if x.poll() is None]
-                time.sleep(0.2)
 
         for i in count(random.randint(0, 50000)):
             fn = "{:05d}.pkl".format(i)
