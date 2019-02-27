@@ -57,6 +57,16 @@ def main():
     if not os.path.isdir(args.log_dir):
         os.mkdir(args.log_dir)
 
+    with open(os.path.join(args.log_dir, "info"), 'ab') as f:
+        torch.save({
+            'args': args,
+            'params': params,
+            'git': {
+                'log': subprocess.getoutput('git log --format="%H" -n 1 -z'),
+                'status': subprocess.getoutput('git status -z'),
+            }
+        }, f)
+
     done_args = dict()
     done_param = set()
 

@@ -1,6 +1,7 @@
 # pylint: disable=C
 import argparse
 import glob
+import os
 
 import torch
 
@@ -10,6 +11,17 @@ def main():
 
     parser.add_argument("log_dir", type=str)
     args = parser.parse_args()
+
+    if os.path.isfile("{}/info".format(args.log_dir)):
+        with open("{}/info".format(args.log_dir), 'rb') as f:
+            while True:
+                try:
+                    info = torch.load(f)
+                    print(info['args'].cmd)
+                    print("    {}".format(info['git']['log']))
+                    print("    {}".format(info['git']['status']))
+                except EOFError:
+                    break
 
 
     runs = [
