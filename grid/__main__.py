@@ -20,7 +20,6 @@ def print_output(out, text, path):
         if path is not None:
             with open(path, 'ta') as f:
                 f.write("{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8")))
-    out.close()
 
     if path is None:
         print("[{}] terminated".format(text))
@@ -67,10 +66,11 @@ def main():
             }
         }, f)
 
-    done_args = dict()
-    done_param = set()
+    done_files = set()
+    done_param = dict()
 
     running = []
+    threads = []
 
     for param in product(*[vals for name, _typ, vals in params]):
 
@@ -80,15 +80,17 @@ def main():
                 time.sleep(0.2)
 
         for f in glob.glob("{}/*.pkl".format(args.log_dir)):
-            if f not in done_args:
+            if f not in done_files:
+                done_files.add(f)
+
                 a = torch.load(f)
-                done_args[f] = a
-                done_param.add(tuple(getattr(a, name) if hasattr(a, name) else None for name, _typ, vals in params))
+                a = tuple(getattr(a, name) if hasattr(a, name) else None for name, _typ, vals in params)
+                done_param[a] = f
 
         text = " ".join("{}={}".format(name, val) for val, (name, _typ, vals) in zip(param, params))
 
         if param in done_param:
-            print('[{}] already done'.format(text))
+            print('[{}] {}'.format(text, done_param[param]))
             continue
 
         for i in count(random.randint(0, 50000)):
@@ -104,9 +106,11 @@ def main():
         t = threading.Thread(target=print_output, args=(p.stdout, text, None))
         t.daemon = True
         t.start()
+        threads.append(t)
         t = threading.Thread(target=print_output, args=(p.stderr, text, os.path.join(args.log_dir, 'stderr')))
         t.daemon = True
         t.start()
+        threads.append(t)
 
         running.append(p)
         print("[{}] {}".format(text, cmd))
@@ -116,6 +120,9 @@ def main():
 
     for x in running:
         x.wait()
+
+    for t in threads:
+        t.join()
 
 
 if __name__ == '__main__':
