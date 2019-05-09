@@ -37,6 +37,11 @@ def main():
 
         values = {r[key] if key in r else None for r in runs}
 
+        try:
+            values = sorted(values)
+        except TypeError:
+            pass
+
         print("{}: {}".format(key, values))
 
 
