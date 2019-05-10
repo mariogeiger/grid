@@ -39,6 +39,7 @@ def main():
 
         try:
             values = sorted(values)
+            values = " ".join([repr(x) for x in values])
         except TypeError:
             pass
 

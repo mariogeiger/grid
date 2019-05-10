@@ -1,7 +1,6 @@
 # pylint: disable=C
 import argparse
 import glob
-import os
 
 import torch
 
