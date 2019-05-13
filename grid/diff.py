@@ -24,7 +24,7 @@ def main():
         for log_dir in [args.log_dir1, args.log_dir2]
     ]
 
-    for key in {key for rs in runs for r in rs for key in r.keys()}:
+    for key in sorted({key for rs in runs for r in rs for key in r.keys()}):
 
         values = [
             {r[key] if key in r else None for r in rs}

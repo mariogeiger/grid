@@ -33,7 +33,7 @@ def main():
         for r in [torch.load(path) for path in glob.glob("{}/*.pkl".format(args.log_dir))]
     ]
 
-    for key in {key for r in runs for key in r.keys()}:
+    for key in sorted({key for r in runs for key in r.keys()}):
 
         values = {r[key] if key in r else None for r in runs}
 
