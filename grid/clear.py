@@ -13,7 +13,7 @@ def main():
     args = parser.parse_args()
 
 
-    for path in glob.glob("{}/*.pkl".format(args.log_dir)):
+    for path in sorted(glob.glob("{}/*.pkl".format(args.log_dir))):
         with open(path, 'rb') as f:
             torch.load(f)
             try:
