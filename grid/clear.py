@@ -19,6 +19,8 @@ def main():
     done = set()
 
     for path in sorted(glob.glob("{}/*.pkl".format(args.log_dir))):
+        print(path, end="\r")
+
         with open(path, 'rb') as f:
             args = tup(torch.load(f))
             try:
