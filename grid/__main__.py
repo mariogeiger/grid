@@ -74,8 +74,8 @@ def main():
 
     for param in product(*[vals for name, _typ, vals in params]):
 
-        if args.n_parallel is not None:
-            while len(running) >= args.n_parallel:
+        if args.n is not None:
+            while len(running) >= args.n:
                 running = [x for x in running if x.poll() is None]
                 time.sleep(0.2)
 
