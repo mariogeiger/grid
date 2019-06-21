@@ -29,7 +29,7 @@ def main():
     parser = argparse.ArgumentParser("grid")
     parser.add_argument("log_dir", type=str, help="path to a directory")
     parser.add_argument("cmd", type=str, help="program to execute in parallel for the grid search")
-    parser.add_argument("--n_parallel", type=int, help="maximum parallel instances (infinite by default)")
+    parser.add_argument("--n", type=int, help="maximum parallel instances (infinite by default)")
     parser.add_argument("--sleep", type=float, default=0, help="sleep time between two runs (in seconds)")
     args, argv = parser.parse_known_args()
 
