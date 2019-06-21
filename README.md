@@ -84,6 +84,12 @@ Example: using slurm and only varying parameter b
 python -m grid results "srun --partition gpu --qos gpu --gres gpu:1 --time 3-00:00:00 --mem 12G --pty python example.py --a 4" --b:int 5 6 7
 ```
 
+## Optional arguments
+
+`--n N` maximum number of job running in the same time
+
+`--sleep S` time to sleep in seconds between two job launch
+
 ## Subcommands
 
 - `pyhton -m grid.clear log_dir` remove files with no content (typically resultant of interrupted runs)
