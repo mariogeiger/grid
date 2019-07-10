@@ -13,7 +13,7 @@ def main():
     parser.add_argument("filter", type=str)
     args = parser.parse_args()
 
-    f = eval(args.filter)
+    fil = eval(args.filter)
 
     for path in glob.glob("{}/*.pkl".format(args.log_dir)):
         with open(path, 'rb') as f:
@@ -23,7 +23,7 @@ def main():
             except EOFError:
                 continue
 
-        if not f(run):
+        if not fil(run):
             print("remove {}".format(path))
             os.remove(path)
 
