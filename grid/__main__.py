@@ -73,11 +73,19 @@ def main():
     threads = []
 
     for param in product(*[vals for name, _typ, vals in params]):
+        if len(running) > 0:
+            time.sleep(args.sleep)
 
         if args.n is not None:
             while len(running) >= args.n:
                 running = [x for x in running if x.poll() is None]
                 time.sleep(0.2)
+
+        if os.path.isfile('stop'):
+            print()
+            print('  >> stop file detected!  <<')
+            print()
+            break
 
         for f in glob.glob("{}/*.pkl".format(args.log_dir)):
             if f not in done_files:
@@ -114,8 +122,6 @@ def main():
 
         running.append(p)
         print("[{}] {}".format(text, cmd))
-
-        time.sleep(args.sleep)
 
 
     for x in running:
