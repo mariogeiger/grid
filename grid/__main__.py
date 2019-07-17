@@ -48,7 +48,7 @@ def main():
             command += " --{0} {{{0}}}".format(name)
         else:
             name, typ, vals, opt = params[-1]
-            if x.startswith("*"):
+            if x.startswith("-"):
                 opt.add(x)
             else:
                 if typ is None:
@@ -75,7 +75,7 @@ def main():
     running = []
     threads = []
 
-    for param in product(*[reversed(vals) if "*r" in opt else vals for name, _typ, vals, opt in params]):
+    for param in product(*[reversed(vals) if "-r" in opt else vals for name, _typ, vals, opt in params]):
         if len(running) > 0:
             time.sleep(args.sleep)
 
