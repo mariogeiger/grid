@@ -44,14 +44,17 @@ def main():
             else:
                 name = x[2:]
                 typ = None
-            params.append((name, typ, []))
+            params.append((name, typ, [], set()))
             command += " --{0} {{{0}}}".format(name)
         else:
-            name, typ, vals = params[-1]
-            if typ is None:
-                vals.append(eval(x))
+            name, typ, vals, opt = params[-1]
+            if x.startswith("*"):
+                opt.add(x)
             else:
-                vals.append(typ(x))
+                if typ is None:
+                    vals.append(eval(x))
+                else:
+                    vals.append(typ(x))
 
     if not os.path.isdir(args.log_dir):
         os.mkdir(args.log_dir)
@@ -72,7 +75,7 @@ def main():
     running = []
     threads = []
 
-    for param in product(*[vals for name, _typ, vals in params]):
+    for param in product(*[reversed(vals) if "*r" in opt else vals for name, _typ, vals, opt in params]):
         if len(running) > 0:
             time.sleep(args.sleep)
 
@@ -92,10 +95,10 @@ def main():
                 done_files.add(f)
 
                 a = torch.load(f)
-                a = tuple(getattr(a, name) if hasattr(a, name) else None for name, _typ, vals in params)
+                a = tuple(getattr(a, name) if hasattr(a, name) else None for name, _typ, vals, _opt in params)
                 done_param[a] = f
 
-        text = " ".join("{}={}".format(name, val) for val, (name, _typ, vals) in zip(param, params))
+        text = " ".join("{}={}".format(name, val) for val, (name, _typ, vals, _opt) in zip(param, params))
 
         if param in done_param:
             print('[{}] {}'.format(text, done_param[param]))
@@ -107,7 +110,7 @@ def main():
             if not os.path.isfile(fp):
                 break
 
-        cmd = command.format(pickle=fp, **{name: val for val, (name, _typ, vals) in zip(param, params)})
+        cmd = command.format(pickle=fp, **{name: val for val, (name, _typ, vals, _opt) in zip(param, params)})
 
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
