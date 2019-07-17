@@ -48,7 +48,7 @@ def main():
             command += " --{0} {{{0}}}".format(name)
         else:
             name, typ, vals, opt = params[-1]
-            if x.startswith("-"):
+            if x in ["-r"]:
                 opt.add(x)
             else:
                 if typ is None:
