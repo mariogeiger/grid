@@ -2,6 +2,10 @@
 
 ## Install
 ```
+pip install git+https://github.com/mariogeiger/grid
+```
+or in local
+```
 python setup.py install
 ```
 
