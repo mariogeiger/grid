@@ -37,6 +37,7 @@ def main():
     for key in sorted({key for r in runs for key in r.keys()}):
 
         values = {r[key] if key in r else None for r in runs}
+        n = len(values)
 
         try:
             values = sorted(values)
@@ -44,7 +45,10 @@ def main():
         except TypeError:
             pass
 
-        print("{}: {}".format(key, values))
+        if n > 1:
+            print("{}: ({}) {}".format(key, n, values))
+        else:
+            print("{}: {}".format(key, values))
 
     print("{} records in total (some can be empty!)".format(len(runs)))
 
