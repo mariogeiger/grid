@@ -17,11 +17,12 @@ def main():
             while True:
                 try:
                     info = torch.load(f)
-                    print(info['args'].cmd)
-                    print("    {}".format(info['git']['log']))
-                    print("    {}".format(info['git']['status']))
                 except EOFError:
                     break
+            print("last command")
+            print(info['args'].cmd)
+            print("git commit    {}".format(info['git']['log']))
+            print("git status    {}".format(info['git']['status']))
 
 
     runs = [
@@ -44,6 +45,8 @@ def main():
             pass
 
         print("{}: {}".format(key, values))
+
+    print("{} records in total (some can be empty!)".format(len(runs)))
 
 
 if __name__ == '__main__':
