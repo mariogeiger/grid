@@ -5,6 +5,11 @@ import os
 
 import torch
 
+try:
+    from tqdm import tqdm
+except ModuleNotFoundError:
+    tqdm = lambda x: x
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -18,9 +23,7 @@ def main():
 
     done = set()
 
-    for path in sorted(glob.glob("{}/*.pkl".format(args.log_dir))):
-        print(path, end="\r")
-
+    for path in tqdm(sorted(glob.glob("{}/*.pkl".format(args.log_dir)))):
         with open(path, 'rb') as f:
             args = tup(torch.load(f))
             try:

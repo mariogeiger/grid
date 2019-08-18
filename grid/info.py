@@ -4,6 +4,7 @@ import glob
 import os
 
 import torch
+
 try:
     from tqdm import tqdm
 except ModuleNotFoundError:

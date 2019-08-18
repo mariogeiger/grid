@@ -5,23 +5,27 @@ from collections import defaultdict, namedtuple
 
 import torch
 
+try:
+    from tqdm import tqdm
+except ModuleNotFoundError:
+    tqdm = lambda x: x
+
+
 Run = namedtuple('Run', 'file, time, args, data')
 globalcache = defaultdict(list)
 
-def load(directory, verbose=False, cache=False):
+
+def load(directory, cache=False):
     directory = os.path.normpath(directory)
 
     runs = globalcache[directory] if cache else []
     files = {x.file: x.time for x in runs}
 
-    for file in sorted(glob.glob(os.path.join(directory, '*.pkl'))):
+    for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pkl')))):
         time = os.path.getctime(file)
 
         if file in files and time == files[file]:
             continue
-
-        if verbose:
-            print(file)
 
         with open(file, 'rb') as f:
             try:
