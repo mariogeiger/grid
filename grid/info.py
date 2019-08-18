@@ -10,6 +10,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("log_dir", type=str)
+    parser.add_argument("--thr", type=int, default=5)
     args = parser.parse_args()
 
     if os.path.isfile("{}/info".format(args.log_dir)):
@@ -37,18 +38,23 @@ def main():
     for key in sorted({key for r in runs for key in r.keys()}):
 
         values = {r[key] if key in r else None for r in runs}
+        values = [(x, len([1 for r in runs if (x is None and key not in r) or (key in r and r[key] == x)])) for x in values]
         n = len(values)
 
         try:
             values = sorted(values)
-            values = " ".join([repr(x) for x in values])
         except TypeError:
             pass
 
-        if n > 1:
-            print("{}: ({}) {}".format(key, n, values))
+        if n == 1:
+            text = " ".join(["{}".format(repr(x)) for x, m in values])
+            print("{}: {}".format(key, text))
+        elif n <= args.thr:
+            text = " ".join(["{}({} runs)".format(repr(x), m) for x, m in values])
+            print("{}: {}".format(key, text))
         else:
-            print("{}: {}".format(key, values))
+            text = " ".join([repr(x) for x, m in values])
+            print("{}: ({} values) {}".format(key, n, text))
 
     print("{} records in total (some can be empty!)".format(len(runs)))
 
