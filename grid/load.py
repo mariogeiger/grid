@@ -42,4 +42,4 @@ def load(directory, predicate=None, cache=True):
     if cache:
         GLOBALCACHE[directory] = runs
 
-    return [x.data for x in runs if predicate(x.args)]
+    return [x.data for x in runs if predicate is None or predicate(x.args)]
