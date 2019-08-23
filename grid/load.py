@@ -12,19 +12,18 @@ except ModuleNotFoundError:
 
 
 Run = namedtuple('Run', 'file, time, args, data')
-GLOBALCACHE = defaultdict(list)
+GLOBALCACHE = defaultdict(dict)
 
 
 def load(directory, predicate=None, cache=True):
     directory = os.path.normpath(directory)
 
-    runs = GLOBALCACHE[directory] if cache else []
-    files = {x.file: x.time for x in runs}
+    runs = GLOBALCACHE[directory] if cache else dict()
 
     for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pkl')))):
         time = os.path.getctime(file)
 
-        if file in files and time == files[file]:
+        if file in runs and time == runs[file].time:
             continue
 
         with open(file, 'rb') as f:
@@ -37,9 +36,10 @@ def load(directory, predicate=None, cache=True):
                 data = torch.load(f, map_location='cpu')
             except:
                 continue
-        runs.append(Run(file=file, time=time, args=args, data=data))
+
+        runs[file] = Run(file=file, time=time, args=args, data=data)
 
     if cache:
         GLOBALCACHE[directory] = runs
 
-    return [x.data for x in runs if predicate is None or predicate(x.args)]
+    return [x.data for file, x in runs.items() if predicate is None or predicate(x.args)]
