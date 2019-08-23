@@ -18,12 +18,14 @@ GLOBALCACHE = defaultdict(dict)
 def load(directory, predicate=None, cache=True):
     directory = os.path.normpath(directory)
 
-    runs = GLOBALCACHE[directory] if cache else dict()
+    cache_runs = GLOBALCACHE[directory] if cache else dict()
+    runs = dict()
 
     for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pkl')))):
         time = os.path.getctime(file)
 
-        if file in runs and time == runs[file].time:
+        if file in cache_runs and time == cache_runs[file].time:
+            runs[file] = cache_runs[file]
             continue
 
         with open(file, 'rb') as f:
