@@ -12,6 +12,11 @@ from itertools import count, product
 
 import torch
 
+try:
+    from tqdm import tqdm
+except ModuleNotFoundError:
+    tqdm = lambda x: x
+
 
 def print_output(out, text, path):
     for line in iter(out.readline, b''):
@@ -71,6 +76,14 @@ def main():
 
     done_files = set()
     done_param = dict()
+
+    for f in tqdm(glob.glob("{}/*.pkl".format(args.log_dir))):
+        if f not in done_files:
+            done_files.add(f)
+
+            a = torch.load(f)
+            a = tuple(getattr(a, name) if hasattr(a, name) else None for name, _typ, vals, _opt in params)
+            done_param[a] = f
 
     running = []
     threads = []
