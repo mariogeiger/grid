@@ -4,6 +4,11 @@ import glob
 
 import torch
 
+try:
+    from tqdm import tqdm
+except ModuleNotFoundError:
+    tqdm = lambda x: x
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -19,7 +24,7 @@ def main():
                 for key, value in r.__dict__.items()
                 if key != 'pickle'
             }
-            for r in [torch.load(path) for path in glob.glob("{}/*.pkl".format(log_dir))]
+            for r in [torch.load(path) for path in tqdm(glob.glob("{}/*.pkl".format(log_dir)))]
         ]
         for log_dir in [args.log_dir1, args.log_dir2]
     ]
