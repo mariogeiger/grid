@@ -5,6 +5,11 @@ import os
 
 import torch
 
+try:
+    from tqdm import tqdm
+except ModuleNotFoundError:
+    tqdm = lambda x: x
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -15,7 +20,7 @@ def main():
 
     f = eval(args.filter)
 
-    for path in glob.glob("{}/*.pkl".format(args.log_dir)):
+    for path in tqdm(glob.glob("{}/*.pkl".format(args.log_dir))):
         if not f(torch.load(path)):
             print("remove {}".format(path))
             os.remove(path)
