@@ -20,7 +20,10 @@ def print_info(argss, thr=5):
         for r in argss
     ]
 
-    for key in sorted({key for r in argss for key in r.keys()}):
+    def keyf(key):
+        return (len({r[key] if key in r else None for r in argss}), key)
+
+    for key in sorted({key for r in argss for key in r.keys()}, key=keyf):
 
         values = {r[key] if key in r else None for r in argss}
         values = [(x, len([1 for r in argss if (x is None and key not in r) or (key in r and r[key] == x)])) for x in values]
