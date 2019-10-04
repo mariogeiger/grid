@@ -15,8 +15,8 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("log_dir", type=str)
-    parser.add_argument("pred_args", type=str)
-    parser.add_argument("pred_run", type=str)
+    parser.add_argument("--pred_args", type=str)
+    parser.add_argument("--pred_run", type=str)
     args = parser.parse_args()
 
     pred_args = eval(args.pred_args) if args.pred_args else None
