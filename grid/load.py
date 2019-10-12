@@ -18,6 +18,9 @@ GLOBALCACHE = defaultdict(dict)
 def load(directory, predicate=None, cache=True):
     directory = os.path.normpath(directory)
 
+    if not os.path.isdir(directory):
+        raise NotADirectoryError('{} does not exists'.format(directory))
+
     cache_runs = GLOBALCACHE[directory] if cache else dict()
     runs = dict()
 
