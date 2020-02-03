@@ -10,6 +10,7 @@ python setup.py install
 ```
 
 ## Usage
+### Save results
 The file `example.py` is a minimal script that can be used with `grid`.
 
 ```
@@ -86,6 +87,14 @@ The results already done are not executed again
 Example: using slurm and only varying parameter b
 ```
 python -m grid results "srun --partition gpu --qos gpu --gres gpu:1 --time 3-00:00:00 --mem 12G --pty python example.py --a 4" --b:int 5 6 7
+```
+
+### Load results
+```
+from grid import load
+
+runs = load('./results/')
+print('{} results loaded'.format(len(runs)))
 ```
 
 ## Optional arguments
