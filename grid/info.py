@@ -56,7 +56,7 @@ def main():
     parser.add_argument("--pred", type=str)
     args = parser.parse_args()
 
-    pred_args = eval(args.pred_args) if args.pred_args else None
+    pred_args = eval(args.pred) if args.pred else None
 
     if os.path.isfile("{}/info".format(args.log_dir)):
         with open("{}/info".format(args.log_dir), 'rb') as f:
