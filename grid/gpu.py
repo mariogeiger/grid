@@ -1,12 +1,8 @@
-import argparse
-import time
-import os
-import sys
-import subprocess
-import random
-import GPUtil
-import numpy as np
+# pylint: disable=missing-docstring, bare-except, import-error, invalid-name
 import glob
+import os
+import random
+import subprocess
 
 
 def check_pid(pid):
@@ -24,6 +20,7 @@ def get_free_gpus(maxLoad=0.5, maxMemory=0.5, maxProc=3):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+    import GPUtil
     GPUs = GPUtil.getGPUs()
 
     GPUs = [gpu for gpu in GPUs if gpu.load < maxLoad and gpu.memoryUtil < maxMemory]
