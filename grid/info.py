@@ -1,4 +1,4 @@
-# pylint: disable=C
+# pylint: disable=eval-used, missing-docstring, invalid-name, line-too-long
 import argparse
 import glob
 import os
@@ -9,6 +9,7 @@ try:
     from tqdm import tqdm
 except ModuleNotFoundError:
     tqdm = lambda x: x
+
 
 def print_info(argss, thr=5):
     argss = [
@@ -52,7 +53,10 @@ def main():
 
     parser.add_argument("log_dir", type=str)
     parser.add_argument("--thr", type=int, default=5)
+    parser.add_argument("--pred", type=str)
     args = parser.parse_args()
+
+    pred_args = eval(args.pred_args) if args.pred_args else None
 
     if os.path.isfile("{}/info".format(args.log_dir)):
         with open("{}/info".format(args.log_dir), 'rb') as f:
@@ -67,6 +71,7 @@ def main():
             print("git status    {}".format(info['git']['status']))
 
     argss = (torch.load(path) for path in tqdm(glob.glob("{}/*.pkl".format(args.log_dir))))
+    argss = (a for a in argss if pred_args is None or pred_args(a))
 
     print_info(argss, args.thr)
 
