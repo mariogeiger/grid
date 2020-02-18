@@ -12,9 +12,20 @@ except ModuleNotFoundError:
 
 
 def print_info(argss, thr=5):
+    def hashable(x):
+        if isinstance(x, list):
+            x = tuple(x)
+        if isinstance(x, set):
+            x = frozenset(x)
+        try:
+            hash(x)
+        except TypeError:
+            return '<not hashable>'
+        return x
+
     argss = [
         {
-            key: value
+            key: hashable(value)
             for key, value in r.__dict__.items()
             if key != 'pickle'
         }
