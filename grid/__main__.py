@@ -15,7 +15,8 @@ import torch
 try:
     from tqdm import tqdm
 except ModuleNotFoundError:
-    tqdm = lambda x: x
+    def tqdm(x):
+        return x
 
 
 def print_output(out, text, path):
@@ -77,7 +78,7 @@ def main():
     done_files = set()
     done_param = dict()
 
-    for f in tqdm(glob.glob("{}/*.pkl".format(args.log_dir))):
+    for f in tqdm(glob.glob(os.path.join(args.log_dir, "*.pkl"))):
         if f not in done_files:
             done_files.add(f)
 
@@ -103,7 +104,7 @@ def main():
             print()
             break
 
-        for f in glob.glob("{}/*.pkl".format(args.log_dir)):
+        for f in glob.glob(os.path.join(args.log_dir, "*.pkl")):
             if f not in done_files:
                 done_files.add(f)
 
@@ -138,7 +139,6 @@ def main():
 
         running.append(p)
         print("[{}] {}".format(text, cmd))
-
 
     for x in running:
         x.wait()
