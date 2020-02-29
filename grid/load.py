@@ -8,7 +8,8 @@ import torch
 try:
     from tqdm import tqdm
 except ModuleNotFoundError:
-    tqdm = lambda x: x
+    def tqdm(x):
+        return x
 
 
 Run = namedtuple('Run', 'file, time, args, data')
