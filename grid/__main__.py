@@ -20,6 +20,9 @@ except ModuleNotFoundError:
 
 
 def print_output(out, text, path):
+    if path is not None:
+        open(path, 'ta').close()
+
     for line in iter(out.readline, b''):
         print("[{}] {}".format(text, line.decode("utf-8")), end="")
 
