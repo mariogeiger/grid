@@ -6,8 +6,6 @@ from collections import defaultdict, namedtuple
 
 import torch
 
-from grid import args_intersection, args_union
-
 try:
     from tqdm import tqdm
 except ModuleNotFoundError:
@@ -57,6 +55,40 @@ def load_iter(directory, predicate=None, cache=True):
         x = Run(file=file, time=time, args=args, data=data)
         cache_runs[file] = x
         yield x.data
+
+
+def hashable(x):
+    if isinstance(x, list):
+        x = tuple(hashable(i) for i in x)
+    if isinstance(x, set):
+        x = frozenset(x)
+    try:
+        hash(x)
+    except TypeError:
+        return '<not hashable>'
+    return x
+
+
+def args_intersection(argss):
+    return {k: list(v)[0] for k, v in args_union(argss).items() if len(v) == 1}
+
+
+def args_union(argss):
+    argss = [
+        {
+            key: hashable(value)
+            for key, value in r.__dict__.items()
+            if key != 'pickle'
+        }
+        for r in argss
+    ]
+
+    keys = {key for r in argss for key in r.keys()}
+
+    return {
+        key: {r[key] if key in r else None for r in argss}
+        for key in keys
+    }
 
 
 def load_grouped(directory, group_by, pred_args=None, pred_run=None):
