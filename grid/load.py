@@ -6,7 +6,7 @@ from collections import defaultdict, namedtuple
 
 import torch
 
-from . import args_intersection, args_union
+from grid import args_intersection, args_union
 
 try:
     from tqdm import tqdm
