@@ -1,9 +1,12 @@
 # pylint: disable=missing-docstring, bare-except, invalid-name
 import glob
+import itertools
 import os
 from collections import defaultdict, namedtuple
 
 import torch
+
+from . import args_intersection, args_union
 
 try:
     from tqdm import tqdm
@@ -54,3 +57,44 @@ def load_iter(directory, predicate=None, cache=True):
         x = Run(file=file, time=time, args=args, data=data)
         cache_runs[file] = x
         yield x.data
+
+
+def load_grouped(directory, group_by, pred_args=None, pred_run=None):
+    """
+
+    example:
+
+    args, groups = load_grouped('results', ['alpha', 'seed_init'])
+
+    for param, rs in groups:
+        # in `rs` only 'alpha' and 'seed_init' can vary
+        plot(rs, label=param)
+
+    """
+    runs = load(directory, predicate=pred_args)
+    if pred_run is not None:
+        runs = [r for r in runs if pred_run(r)]
+
+    args = args_intersection([r['args'] for r in runs])
+    variants = {
+        key: sorted(values)
+        for key, values in args_union([r['args'] for r in runs]).items()
+        if len(values) > 1 and key not in group_by
+    }
+
+    groups = []
+    for vals in itertools.product(*variants.values()):
+        var = {k: v for k, v in zip(variants, vals)}
+
+        rs = [
+            r
+            for r in runs
+            if all(
+                (getattr(r['args'], k) == v) if hasattr(r['args'], k) else (v is None)
+                for k, v in var.items()
+            )
+        ]
+        if rs:
+            groups.append((var, rs))
+
+    return args, groups

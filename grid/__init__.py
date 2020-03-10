@@ -1,15 +1,15 @@
 # pylint: disable=missing-docstring, invalid-name
-from .load import load, load_iter
+from .load import load, load_iter, load_grouped
 from .info import print_info
 from .gpu import get_free_gpus
 
 
-__all__ = ['load', 'load_iter', 'print_info', 'get_free_gpus', 'args_intersection', 'args_variation']
+__all__ = ['load', 'load_iter', 'load_grouped', 'print_info', 'get_free_gpus', 'args_intersection', 'args_union']
 
 
 def hashable(x):
     if isinstance(x, list):
-        x = tuple(x)
+        x = tuple(hashable(i) for i in x)
     if isinstance(x, set):
         x = frozenset(x)
     try:
@@ -20,24 +20,10 @@ def hashable(x):
 
 
 def args_intersection(argss):
-    from functools import reduce
-
-    argss = [
-        {
-            key: hashable(value)
-            for key, value in r.__dict__.items()
-            if key != 'pickle'
-        }
-        for r in argss
-    ]
-
-    keys = reduce(set.intersection, [set(r.keys()) for r in argss])
-
-    values = {k: {r[k] for r in argss} for k in keys}
-    return {k: list(v)[0] for k, v in values.items() if len(v) == 1}
+    return {k: list(v)[0] for k, v in args_union(argss).items() if len(v) == 1}
 
 
-def args_variation(argss):
+def args_union(argss):
     argss = [
         {
             key: hashable(value)
