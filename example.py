@@ -11,7 +11,12 @@ def execute(args):
         time.sleep(0.5)
         print("computation {} / 3".format(i + 1), flush=True)  # need flush=True
 
-    return args.a / args.b
+    result_of_heavy_computation = args.a / args.b
+
+    return {
+        'args': args,
+        'division': result_of_heavy_computation
+    }
 
 
 def main():

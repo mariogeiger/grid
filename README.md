@@ -90,11 +90,24 @@ python -m grid results "srun --partition gpu --qos gpu --gres gpu:1 --time 3-00:
 ```
 
 ### Load results
-```
+```python
 from grid import load
 
 runs = load('./results/')
 print('{} results loaded'.format(len(runs)))
+```
+
+### Load in groups
+```python
+from grid import load_grouped
+import matplotlib.pyplot as plt
+
+args, groups = load_grouped('./results/', ['b'])
+
+for param, rs in groups:
+    rs = sorted(rs, key=lambda r: r['args'].b)
+    label = "a={0[a]}".format(param)
+    plt.plot([r['args'].b for r in rs], [r['division'] for r in rs], label=label)
 ```
 
 ## Optional arguments
