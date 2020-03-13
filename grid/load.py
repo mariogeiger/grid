@@ -109,7 +109,7 @@ def load_grouped(directory, group_by, pred_args=None, pred_run=None):
 
     args = args_intersection([r['args'] for r in runs])
     variants = {
-        key: sorted(values)
+        key: sorted(values, key=repr)
         for key, values in args_union([r['args'] for r in runs]).items()
         if len(values) > 1 and key not in group_by
     }
