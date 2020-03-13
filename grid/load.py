@@ -69,6 +69,22 @@ def hashable(x):
     return x
 
 
+def keyall(x):
+    if x is None:
+        return (0, x)
+    if isinstance(x, bool):
+        return (1, x)
+    if isinstance(x, str):
+        return (2, x)
+    if isinstance(x, (int, float)):
+        return (3, x)
+    if isinstance(x, tuple):
+        return (4, tuple(keyall(i) for i in x))
+    if isinstance(x, list):
+        return (5, [keyall(i) for i in x])
+    return (6, x)
+
+
 def args_intersection(argss):
     return {k: list(v)[0] for k, v in args_union(argss).items() if len(v) == 1}
 
@@ -109,7 +125,7 @@ def load_grouped(directory, group_by, pred_args=None, pred_run=None):
 
     args = args_intersection([r['args'] for r in runs])
     variants = {
-        key: sorted(values, key=repr)
+        key: sorted(values, key=keyall)
         for key, values in args_union([r['args'] for r in runs]).items()
         if len(values) > 1 and key not in group_by
     }
