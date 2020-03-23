@@ -108,8 +108,8 @@ def args_union(argss):
 
 
 def args_diff(argss):
-    argss = [args_todict(r) for r in argss]
     args = args_intersection(argss)
+    argss = [args_todict(r) for r in argss]
     return [
         {
             key: a[key]
