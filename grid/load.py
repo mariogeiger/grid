@@ -89,22 +89,35 @@ def args_intersection(argss):
     return {k: list(v)[0] for k, v in args_union(argss).items() if len(v) == 1}
 
 
-def args_union(argss):
-    argss = [
-        {
-            key: hashable(value)
-            for key, value in r.__dict__.items()
-            if key != 'pickle'
-        }
-        for r in argss
-    ]
+def args_todict(r):
+    return {
+        key: hashable(value)
+        for key, value in r.__dict__.items()
+        if key != 'pickle'
+    }
 
+
+def args_union(argss):
+    argss = [args_todict(r) for r in argss]
     keys = {key for r in argss for key in r.keys()}
 
     return {
         key: {r[key] if key in r else None for r in argss}
         for key in keys
     }
+
+
+def args_diff(argss):
+    argss = [args_todict(r) for r in argss]
+    args = args_intersection(argss)
+    return [
+        {
+            key: a[key]
+            for key in a.keys()
+            if key not in args.keys()
+        }
+        for a in argss
+    ]
 
 
 def load_grouped(directory, group_by, pred_args=None, pred_run=None):
