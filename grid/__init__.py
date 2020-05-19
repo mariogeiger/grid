@@ -1,6 +1,6 @@
-# pylint: disable=missing-docstring, invalid-name
+# pylint: disable=missing-docstring, invalid-name, line-too-long
 from .load import load, load_iter, load_grouped, args_intersection, args_union, group_runs
-from .info import print_info
+from .print_info import print_info
 from .gpu import get_free_gpus
 
 
