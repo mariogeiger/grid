@@ -155,11 +155,12 @@ def group_runs(runs, group_by):
             r
             for r in runs
             if all(
-                (getattr(r['args'], k) == v) if hasattr(r['args'], k) else (v is None)
+                (hashable(getattr(r['args'], k)) == v) if hasattr(r['args'], k) else (v is None)
                 for k, v in var.items()
             )
         ]
         if rs:
             groups.append((var, rs))
+    assert len(runs) == sum(len(rs) for _a, rs in groups)
 
     return args, groups
