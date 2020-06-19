@@ -2,6 +2,7 @@
 import argparse
 import json
 import torch
+import math
 
 from grid import load_iter
 
@@ -21,32 +22,67 @@ class Data:
 
 def get_structure(r):
     if isinstance(r, dict):
-        return {key: get_structure(val) for key, val in r.items()}
+        d = {key: get_structure(val) for key, val in r.items()}
+        nb = sum(nb for nb, _ in d.values())
+        return (nb, d)
 
     if isinstance(r, list):
         out = []
+        nb = 0
         for x in r:
             x = get_structure(x)
             if x not in out:
                 out.append(x)
-        return list(out)
+            nb += x[0]
+        return (nb, list(out))
 
     if isinstance(r, tuple):
-        return tuple(get_structure(x) for x in r)
+        t = tuple(get_structure(x) for x in r)
+        nb = sum(nb for nb, _ in t)
+        return (nb, t)
+
+    if isinstance(r, (int, float)):
+        return (8, 'number')
+
+    if isinstance(r, torch.Tensor) and r.numel() == 1:
+        return (8, 'number')
 
     if isinstance(r, torch.Tensor):
-        return 'tensor {:.1f}MiB'.format(r.numel() * r.element_size() / 1024 / 1024)
-
-    if isinstance(r, int):
-        return 'int'
-
-    if isinstance(r, float):
-        return 'float'
+        nb = r.numel() * r.element_size()
+        return (nb, 'tensor')
 
     if r is None:
-        return 'none'
+        return (0, 'none')
 
-    return 'data'
+    return (math.nan, 'unknown')
+
+
+def to_kmg(x):
+    if x > 1024**3:
+        return "{:.1f}GiB".format(x / 1024**3)
+    if x > 1024**2:
+        return "{:.1f}MiB".format(x / 1024**2)
+    if x > 1024:
+        return "{:.1f}KiB".format(x / 1024)
+    return "{}B".format(x)
+
+
+def for_human(r):
+    nb, x = r
+
+    if isinstance(x, dict):
+        d = {key: for_human(r) for key, r in x.items()}
+        return (to_kmg(nb), d)
+
+    if isinstance(x, list):
+        l = [for_human(r) for r in x]
+        return (to_kmg(nb), l)
+
+    if isinstance(x, tuple):
+        t = tuple(for_human(r) for r in x)
+        return (to_kmg(nb), t)
+
+    return (to_kmg(nb), x)
 
 
 def main():
@@ -65,7 +101,7 @@ def main():
         if args.n and i + 1 >= args.n:
             break
 
-    print('\n\n\n'.join(json.dumps(s, indent=4, sort_keys=True) for s in structures))
+    print('\n\n\n'.join(json.dumps(for_human(s), indent=4, sort_keys=True) for s in structures))
 
 
 if __name__ == '__main__':
