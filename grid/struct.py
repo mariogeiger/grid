@@ -54,7 +54,10 @@ def get_structure(r):
     if r is None:
         return (0, 'none')
 
-    return (math.nan, 'unknown')
+    if isinstance(r, str):
+        return (len(r), 'str')
+
+    return (0, 'unknown')
 
 
 def to_kmg(x):
