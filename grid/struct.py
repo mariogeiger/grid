@@ -44,6 +44,11 @@ def get_structure(r):
     if isinstance(r, (int, float)):
         return (8, 'number')
 
+    if isinstance(r, torch.Tensor) and r.grad_fn is not None:
+        print('detected tensor with tree ', r.grad_fn)
+        nb = r.numel() * r.element_size()
+        return (nb, 'tensor with tree!')
+
     if isinstance(r, torch.Tensor) and r.numel() == 1:
         return (8, 'number')
 
