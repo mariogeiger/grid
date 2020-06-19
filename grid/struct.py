@@ -1,6 +1,7 @@
-# pylint: disable=C
+# pylint: disable=C, no-member
 import argparse
 import json
+import torch
 
 from grid import load_iter
 
@@ -32,6 +33,15 @@ def get_structure(r):
 
     if isinstance(r, tuple):
         return tuple(get_structure(x) for x in r)
+
+    if isinstance(r, torch.Tensor):
+        return 'tensor {:.1f}MiB'.format(r.numel() * r.element_size() / 1024 / 1024)
+
+    if isinstance(r, int):
+        return 'int'
+
+    if isinstance(r, float):
+        return 'float'
 
     return 'data'
 
