@@ -2,7 +2,6 @@
 import argparse
 import json
 import torch
-import math
 
 from grid import load_iter
 

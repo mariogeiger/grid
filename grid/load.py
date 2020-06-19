@@ -17,11 +17,14 @@ Run = namedtuple('Run', 'file, time, args, data')
 GLOBALCACHE = defaultdict(dict)
 
 
-def load(directory, predicate=None, cache=True):
-    return list(load_iter(directory, predicate, cache))
+def load(directory, predicate=None, cache=True, extractor=None):
+    return list(load_iter(directory, predicate, cache, extractor))
 
 
-def load_iter(directory, predicate=None, cache=True):
+def load_iter(directory, predicate=None, cache=True, extractor=None):
+    if extractor is not None:
+        cache = False
+
     directory = os.path.normpath(directory)
 
     if not os.path.isdir(directory):
@@ -51,6 +54,9 @@ def load_iter(directory, predicate=None, cache=True):
                 data = torch.load(f, map_location='cpu')
             except:
                 continue
+
+        if extractor is not None:
+            data = extractor(data)
 
         x = Run(file=file, time=time, args=args, data=data)
         cache_runs[file] = x
