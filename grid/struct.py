@@ -43,6 +43,9 @@ def get_structure(r):
     if isinstance(r, float):
         return 'float'
 
+    if r is None:
+        return 'none'
+
     return 'data'
 
 
