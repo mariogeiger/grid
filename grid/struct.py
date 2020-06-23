@@ -52,7 +52,10 @@ def get_structure(r):
         return (8, 'number')
 
     if isinstance(r, torch.Tensor):
-        nb = r.numel() * r.element_size()
+        s = r.storage()
+        nb = s.size() * s.element_size()
+        if r.numel() < s.size():
+            print("Warning: the view of a larger tensor is stored, condider saving a clone to reduce size of the file")
         return (nb, 'tensor')
 
     if r is None:
