@@ -27,13 +27,13 @@ def main():
 
     args = parser.parse_args()
 
-    torch.save(args, args.pickle)
+    torch.save(args, args.pickle, _use_new_zipfile_serialization=False)
     try:
         results = execute(args)
 
         with open(args.pickle, 'wb') as f:
-            torch.save(args, f)
-            torch.save(results, f)
+            torch.save(args, f, _use_new_zipfile_serialization=False)
+            torch.save(results, f, _use_new_zipfile_serialization=False)
     except:
         os.remove(args.pickle)
         raise

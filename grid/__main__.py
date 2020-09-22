@@ -76,7 +76,7 @@ def main():
                 'log': subprocess.getoutput('git log --format="%H" -n 1 -z'),
                 'status': subprocess.getoutput('git status -z'),
             }
-        }, f)
+        }, f, _use_new_zipfile_serialization=False)
 
     done_files = set()
     done_param = dict()
