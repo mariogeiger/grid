@@ -1,10 +1,12 @@
-# pylint: disable=missing-docstring, bare-except, invalid-name
+# pylint: disable=missing-docstring, bare-except, invalid-name, line-too-long
 import glob
 import itertools
 import os
 from collections import defaultdict, namedtuple
 
 import torch
+
+from grid.exec import zip_load
 
 try:
     from tqdm import tqdm
@@ -17,11 +19,11 @@ Run = namedtuple('Run', 'file, time, args, data')
 GLOBALCACHE = defaultdict(dict)
 
 
-def load(directory, predicate=None, cache=True, extractor=None):
-    return list(load_iter(directory, predicate, cache, extractor))
+def load(directory, pred_args=None, pred_run=None, cache=True, extractor=None):
+    return list(load_iter(directory, pred_args, pred_run, cache, extractor))
 
 
-def load_iter(directory, predicate=None, cache=True, extractor=None):
+def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=None):
     if extractor is not None:
         cache = False
 
@@ -32,27 +34,41 @@ def load_iter(directory, predicate=None, cache=True, extractor=None):
 
     cache_runs = GLOBALCACHE[directory] if cache else dict()
 
-    for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pkl')))):
+    for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pkl')) + glob.glob(os.path.join(directory, '*.zip')))):
         time = os.path.getctime(file)
 
         if file in cache_runs and time == cache_runs[file].time:
             x = cache_runs[file]
 
-            if predicate is not None and not predicate(x.args):
+            if pred_args is not None and not pred_args(x.args):
+                continue
+
+            if pred_run is not None and not pred_run(x.data):
                 continue
 
             yield x.data
             continue
 
-        with open(file, 'rb') as f:
-            try:
-                args = torch.load(f)
+        if '.pkl' in file:
+            with open(file, 'rb') as f:
+                try:
+                    args = torch.load(f)
 
-                if predicate is not None and not predicate(args):
+                    if pred_args is not None and not pred_args(args):
+                        continue
+
+                    data = torch.load(f, map_location='cpu')
+                except:
                     continue
+        if '.zip' in file:
+            args = zip_load(file, 'args')
 
-                data = torch.load(f, map_location='cpu')
-            except:
+            if args is None or pred_args is not None and not pred_args(args):
+                continue
+
+            data = zip_load(file, 'data')
+
+            if data is None:
                 continue
 
         if extractor is not None:
@@ -60,6 +76,10 @@ def load_iter(directory, predicate=None, cache=True, extractor=None):
 
         x = Run(file=file, time=time, args=args, data=data)
         cache_runs[file] = x
+
+        if pred_run is not None and not pred_run(x.data):
+            continue
+
         yield x.data
 
 
@@ -99,7 +119,7 @@ def args_todict(r):
     return {
         key: hashable(value)
         for key, value in r.__dict__.items()
-        if key != 'pickle'
+        if key not in ['pickle', 'output']
     }
 
 
@@ -138,9 +158,7 @@ def load_grouped(directory, group_by, pred_args=None, pred_run=None):
         plot(rs, label=param)
 
     """
-    runs = load(directory, predicate=pred_args)
-    if pred_run is not None:
-        runs = [r for r in runs if pred_run(r)]
+    runs = load(directory, pred_args=pred_args, pred_run=pred_run)
 
     return group_runs(runs, group_by)
 

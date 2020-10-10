@@ -17,7 +17,7 @@ def print_info(argss, thr=5):
         {
             key: hashable(value)
             for key, value in r.__dict__.items()
-            if key != 'pickle'
+            if key not in ['pickle', 'output']
         }
         for r in argss
     ]

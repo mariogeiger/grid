@@ -1,9 +1,9 @@
-# pylint: disable=C,R,E1101
+# pylint: disable=missing-docstring
 import argparse
 import os
 import time
 
-import torch
+from grid import zip_save
 
 
 def execute(args):
@@ -21,21 +21,17 @@ def execute(args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pickle", type=str, required=True)
+    parser.add_argument("--output", type=str, required=True)
     parser.add_argument("--a", type=int, required=True)
     parser.add_argument("--b", type=int, required=True)
 
     args = parser.parse_args()
 
-    torch.save(args, args.pickle, _use_new_zipfile_serialization=False)
+    zip_save(args.output, {'args': args})
     try:
-        results = execute(args)
-
-        with open(args.pickle, 'wb') as f:
-            torch.save(args, f, _use_new_zipfile_serialization=False)
-            torch.save(results, f, _use_new_zipfile_serialization=False)
+        zip_save(args.output, {'args': args, 'data': execute(args)})
     except:
-        os.remove(args.pickle)
+        os.remove(args.output)
         raise
 
 

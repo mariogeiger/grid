@@ -4,6 +4,8 @@ import glob
 
 import torch
 
+from grid import zip_load
+
 try:
     from tqdm import tqdm
 except ModuleNotFoundError:
@@ -23,9 +25,15 @@ def main():
             {
                 key: value
                 for key, value in r.__dict__.items()
-                if key != 'pickle'
+                if key not in ['pickle', 'output']
             }
-            for r in [torch.load(path) for path in tqdm(glob.glob("{}/*.pkl".format(log_dir)))]
+            for r in [
+                torch.load(path)
+                for path in tqdm(glob.glob("{}/*.pkl".format(log_dir)))
+            ] + [
+                zip_load(path, 'args')
+                for path in tqdm(glob.glob("{}/*.zip".format(log_dir)))
+            ]
         ]
         for log_dir in [args.log_dir1, args.log_dir2]
     ]

@@ -5,6 +5,8 @@ import os
 
 import torch
 
+from grid import zip_load
+
 try:
     from tqdm import tqdm
 except ModuleNotFoundError:
@@ -24,7 +26,7 @@ def main():
     pred_run = eval(args.pred_run) if args.pred_run else None
 
     def tup(args):
-        d = [(key, value) for key, value in args.__dict__.items() if key != 'pickle']
+        d = [(key, value) for key, value in args.__dict__.items() if key not in ['pickle', 'output']]
         return tuple(sorted(d))
 
     done = set()
@@ -57,6 +59,39 @@ def main():
                 continue
 
             done.add(args)
+
+    for path in tqdm(sorted(glob.glob("{}/*.zip".format(args.log_dir)))):
+        args = zip_load(path, 'args')
+
+        if args is None:
+            print("args None: {}".format(path))
+            os.remove(path)
+            continue
+
+        if pred_args and not pred_args(args):
+            print("pred_args failed: {}".format(path))
+            os.remove(path)
+            continue
+
+        run = zip_load(path, 'data')
+
+        if run is None:
+            print("rm empty: {}".format(path))
+            os.remove(path)
+            continue
+
+        if pred_run and not pred_run(run):
+            print("pred_run failed: {}".format(path))
+            os.remove(path)
+            continue
+
+        args = tup(args)
+        if args in done:
+            print("rm clone: {}".format(path))
+            os.remove(path)
+            continue
+
+        done.add(args)
 
 
 if __name__ == '__main__':
