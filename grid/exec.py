@@ -195,4 +195,4 @@ def exec_blocking(log_dir, cmd, param):
     t1.join()
     t2.join()
 
-    return zip_load(f, 'data')
+    return zip_load(fp, 'data')
