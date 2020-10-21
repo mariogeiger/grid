@@ -21,6 +21,8 @@ except ModuleNotFoundError:
 
 
 def zip_load(path, key):
+    if not os.path.isfile(path):
+        return None
     with zipfile.ZipFile(path, 'r') as zf:
         if key in zf.namelist():
             with zf.open(key, 'r') as f:
