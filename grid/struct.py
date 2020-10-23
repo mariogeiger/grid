@@ -1,6 +1,8 @@
 # pylint: disable=C, no-member
 import argparse
 import json
+from collections import Counter
+
 import torch
 
 from grid import load_iter
@@ -26,14 +28,13 @@ def get_structure(r):
         return (nb, d)
 
     if isinstance(r, list):
-        out = []
+        out = Counter()
         nb = 0
         for x in r:
             x = get_structure(x)
-            if x not in out:
-                out.append(x)
+            out[x] += 1
             nb += x[0]
-        return (nb, list(out))
+        return (nb, out)
 
     if isinstance(r, tuple):
         t = tuple(get_structure(x) for x in r)
@@ -85,8 +86,8 @@ def for_human(r):
         d = {key: for_human(r) for key, r in x.items()}
         return (to_kmg(nb), d)
 
-    if isinstance(x, list):
-        l = [for_human(r) for r in x]
+    if isinstance(x, Counter):
+        l = Counter({for_human(r): c for r, c in x.items()})
         return (to_kmg(nb), l)
 
     if isinstance(x, tuple):
