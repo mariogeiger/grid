@@ -38,7 +38,7 @@ def get_structure(r):
                 count[out.index(x)] += 1
             else:
                 out.append(x)
-                count.append(0)
+                count.append(1)
         return (nb, [count, out])
 
     if isinstance(r, tuple):
