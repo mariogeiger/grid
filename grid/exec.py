@@ -14,7 +14,7 @@ from itertools import count, product
 import torch
 
 try:
-    from tqdm import tqdm
+    from tqdm.auto import tqdm
 except ModuleNotFoundError:
     def tqdm(x):
         return x

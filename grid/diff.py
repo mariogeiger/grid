@@ -7,7 +7,7 @@ import torch
 from grid import zip_load
 
 try:
-    from tqdm import tqdm
+    from tqdm.auto import tqdm
 except ModuleNotFoundError:
     def tqdm(x):
         return x
