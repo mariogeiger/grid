@@ -1,7 +1,6 @@
 # pylint: disable=C, no-member
 import argparse
 import json
-from collections import Counter
 
 import torch
 

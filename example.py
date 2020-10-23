@@ -2,8 +2,7 @@
 import argparse
 import os
 import time
-
-from grid import zip_save
+import pickle
 
 
 def execute(args):
@@ -27,9 +26,13 @@ def main():
 
     args = parser.parse_args()
 
-    zip_save(args.output, {'args': args})
+    with open(args.output, 'wb') as handle:
+        pickle.dump(args,  handle)
     try:
-        zip_save(args.output, {'args': args, 'data': execute(args)})
+        data = execute(args)
+        with open(args.output, 'wb') as handle:
+            pickle.dump(args, handle)
+            pickle.dump(data, handle)
     except:
         os.remove(args.output)
         raise

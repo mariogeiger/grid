@@ -1,17 +1,14 @@
 # pylint: disable=missing-docstring, invalid-name, line-too-long
 import datetime
 import glob
-import io
 import os
+import pickle
 import random
 import shlex
 import subprocess
 import threading
 import time
-import zipfile
 from itertools import count, product
-
-import torch
 
 try:
     from tqdm.auto import tqdm
@@ -20,26 +17,28 @@ except ModuleNotFoundError:
         return x
 
 
-def zip_load(path, key):
-    if not os.path.isfile(path):
-        return None
-    for _ in range(10):
+def load_args(f):
+    for _ in range(5):
         try:
-            with zipfile.ZipFile(path, 'r') as zf:
-                if key in zf.namelist():
-                    with zf.open(key, 'r') as f:
-                        return torch.load(io.BytesIO(f.read()), map_location='cpu')
-        except zipfile.BadZipFile:
-            time.sleep(1)
-    return None
+            with open(f, 'rb') as rb:
+                return pickle.load(rb)
+        except:
+            time.sleep(0.1)
+    with open(f, 'rb') as rb:
+        return pickle.load(rb)
 
 
-def zip_save(path, dict_data):
-    with zipfile.ZipFile(path, 'w') as zf:
-        for key, data in dict_data.items():
-            f = io.BytesIO()
-            torch.save(data, f)
-            zf.writestr(key, f.getbuffer())
+def load_data(f):
+    for _ in range(5):
+        try:
+            with open(f, 'rb') as rb:
+                pickle.load(rb)
+                return pickle.load(rb)
+        except:
+            time.sleep(0.1)
+    with open(f, 'rb') as rb:
+        pickle.load(rb)
+        return pickle.load(rb)
 
 
 def print_output(out, text, path):
@@ -67,7 +66,7 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
         os.mkdir(log_dir)
 
     with open(os.path.join(log_dir, "info"), 'wb') as f:
-        torch.save({
+        pickle.dump({
             'cmd': cmd,
             'params': params,
             'git': {
@@ -79,11 +78,11 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
     done_files = set()
     done_param = dict()
 
-    for f in tqdm(glob.glob(os.path.join(log_dir, "*.zip"))):
+    for f in tqdm(glob.glob(os.path.join(log_dir, "*.pk"))):
         if f not in done_files:
             done_files.add(f)
 
-            a = zip_load(f, "args")
+            a = load_args(f)
             a = tuple((name, getattr(a, name) if hasattr(a, name) else None) for name, _vals in params)
             done_param[a] = f
 
@@ -107,11 +106,11 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
             print()
             break
 
-        for f in glob.glob(os.path.join(log_dir, "*.zip")):
+        for f in glob.glob(os.path.join(log_dir, "*.pk")):
             if f not in done_files:
                 done_files.add(f)
 
-                a = zip_load(f, "args")
+                a = load_args(f)
                 a = tuple((name, getattr(a, name) if hasattr(a, name) else None) for name, _vals in params)
                 done_param[a] = f
 
@@ -122,7 +121,7 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
             continue
 
         for i in count(random.randint(0, 999990)):
-            fn = "{:06d}.zip".format(i)
+            fn = "{:06d}.pk".format(i)
             fp = os.path.join(log_dir, fn)
             if not os.path.isfile(fp):
                 break
@@ -162,24 +161,26 @@ def exec_blocking(log_dir, cmd, param):
     done_files = set()
     done_param = dict()
 
-    for f in tqdm(glob.glob(os.path.join(log_dir, "*.zip"))):
+    for f in tqdm(glob.glob(os.path.join(log_dir, "*.pk"))):
         if f not in done_files:
             done_files.add(f)
 
-            a = zip_load(f, "args")
+            a = load_args(f)
             a = tuple((name, getattr(a, name) if hasattr(a, name) else None) for name, _val in param)
             done_param[a] = f
 
     if param in done_param:
         f = done_param[param]
         while True:
-            data = zip_load(f, 'data')
-            if data is not None:
-                return data
-            time.sleep(1)
+            try:
+                r = load_data(f)
+            except EOFError:
+                time.sleep(1)
+            else:
+                return r
 
     for i in count(random.randint(0, 999990)):
-        fn = "{:06d}.zip".format(i)
+        fn = "{:06d}.pk".format(i)
         fp = os.path.join(log_dir, fn)
         if not os.path.isfile(fp):
             break
@@ -201,4 +202,4 @@ def exec_blocking(log_dir, cmd, param):
     t1.join()
     t2.join()
 
-    return zip_load(fp, 'data')
+    return load_data(fp)

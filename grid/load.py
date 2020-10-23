@@ -2,11 +2,8 @@
 import glob
 import itertools
 import os
+import pickle
 from collections import defaultdict, namedtuple
-
-import torch
-
-from grid.exec import zip_load
 
 try:
     from tqdm.auto import tqdm
@@ -34,7 +31,7 @@ def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=No
 
     cache_runs = GLOBALCACHE[directory] if cache else dict()
 
-    for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pkl')) + glob.glob(os.path.join(directory, '*.zip')))):
+    for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pk')))):
         time = os.path.getctime(file)
 
         if file in cache_runs and time == cache_runs[file].time:
@@ -49,26 +46,15 @@ def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=No
             yield x.data
             continue
 
-        if '.pkl' in file:
-            with open(file, 'rb') as f:
-                try:
-                    args = torch.load(f)
+        with open(file, 'rb') as f:
+            try:
+                args = pickle.load(f)
 
-                    if pred_args is not None and not pred_args(args):
-                        continue
-
-                    data = torch.load(f, map_location='cpu')
-                except:
+                if pred_args is not None and not pred_args(args):
                     continue
-        if '.zip' in file:
-            args = zip_load(file, 'args')
 
-            if args is None or pred_args is not None and not pred_args(args):
-                continue
-
-            data = zip_load(file, 'data')
-
-            if data is None:
+                data = pickle.load(f)
+            except:
                 continue
 
         if extractor is not None:
