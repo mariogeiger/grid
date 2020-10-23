@@ -28,13 +28,18 @@ def get_structure(r):
         return (nb, d)
 
     if isinstance(r, list):
-        out = Counter()
+        out = []
+        count = []
         nb = 0
         for x in r:
             x = get_structure(x)
-            out[x] += 1
             nb += x[0]
-        return (nb, out)
+            if x in out:
+                count[out.index(x)] += 1
+            else:
+                out.append(x)
+                count.append(0)
+        return (nb, [count, out])
 
     if isinstance(r, tuple):
         t = tuple(get_structure(x) for x in r)
@@ -86,9 +91,10 @@ def for_human(r):
         d = {key: for_human(r) for key, r in x.items()}
         return (to_kmg(nb), d)
 
-    if isinstance(x, Counter):
-        l = Counter({for_human(r): c for r, c in x.items()})
-        return (to_kmg(nb), l)
+    if isinstance(x, list):
+        c, o = x
+        o = [for_human(r) for r in o]
+        return (to_kmg(nb), [c, o])
 
     if isinstance(x, tuple):
         t = tuple(for_human(r) for r in x)
