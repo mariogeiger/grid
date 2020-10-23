@@ -80,8 +80,8 @@ def main():
                 os.remove(path)
                 continue
 
-            args = tup(args)
-            if args in done:
+            targs = tup(args)
+            if targs in done:
                 print("rm clone: {}".format(path))
                 os.remove(path)
                 continue
@@ -91,7 +91,7 @@ def main():
             pickle.dump(run, f)
         os.remove(path)
 
-        done.add(args)
+        done.add(targs)
 
     done = set()
 
@@ -120,8 +120,8 @@ def main():
             os.remove(path)
             continue
 
-        args = tup(args)
-        if args in done:
+        targs = tup(args)
+        if targs in done:
             print("rm clone: {}".format(path))
             os.remove(path)
             continue
@@ -131,7 +131,7 @@ def main():
             pickle.dump(run, f)
         os.remove(path)
 
-        done.add(args)
+        done.add(targs)
 
     done = set()
 
@@ -155,13 +155,13 @@ def main():
             os.remove(path)
             continue
 
-        args = tup(args)
-        if args in done:
+        targs = tup(args)
+        if targs in done:
             print("rm clone: {}".format(path))
             os.remove(path)
             continue
 
-        done.add(args)
+        done.add(targs)
 
 
 if __name__ == '__main__':
