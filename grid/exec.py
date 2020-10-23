@@ -23,10 +23,14 @@ except ModuleNotFoundError:
 def zip_load(path, key):
     if not os.path.isfile(path):
         return None
-    with zipfile.ZipFile(path, 'r') as zf:
-        if key in zf.namelist():
-            with zf.open(key, 'r') as f:
-                return torch.load(io.BytesIO(f.read()), map_location='cpu')
+    for _ in range(10):
+        try:
+            with zipfile.ZipFile(path, 'r') as zf:
+                if key in zf.namelist():
+                    with zf.open(key, 'r') as f:
+                        return torch.load(io.BytesIO(f.read()), map_location='cpu')
+        except zipfile.BadZipFile:
+            time.sleep(1)
     return None
 
 
