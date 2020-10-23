@@ -120,7 +120,8 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
             print('[{}] {}'.format(text, done_param[param]))
             continue
 
-        for i in count(random.randint(0, 999990)):
+        for i in count(random.randint(0, 999_999)):
+            i = i % 1_000_000
             fn = "{:06d}.pk".format(i)
             fp = os.path.join(log_dir, fn)
             if not os.path.isfile(fp):
@@ -179,7 +180,8 @@ def exec_blocking(log_dir, cmd, param):
             else:
                 return r
 
-    for i in count(random.randint(0, 999990)):
+    for i in count(random.randint(0, 999_999)):
+        i = i % 1_000_000
         fn = "{:06d}.pk".format(i)
         fp = os.path.join(log_dir, fn)
         if not os.path.isfile(fp):
