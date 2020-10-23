@@ -51,13 +51,15 @@ def main():
     pred_args = eval(args.pred_args) if args.pred_args else None
     pred_run = eval(args.pred_run) if args.pred_run else None
 
+    log_dir = args.log_dir
+
     def tup(args):
         d = [(key, value) for key, value in args.__dict__.items() if key not in ['pickle', 'output']]
         return tuple(sorted(d))
 
     done = set()
 
-    for path in tqdm(sorted(glob.glob("{}/*.pkl".format(args.log_dir)))):
+    for path in tqdm(sorted(glob.glob("{}/*.pkl".format(log_dir)))):
         with open(path, 'rb') as f:
             args = torch.load(f)
 
@@ -93,7 +95,7 @@ def main():
 
     done = set()
 
-    for path in tqdm(sorted(glob.glob("{}/*.zip".format(args.log_dir)))):
+    for path in tqdm(sorted(glob.glob("{}/*.zip".format(log_dir)))):
         args = zip_load(path, 'args')
 
         if args is None:
@@ -133,7 +135,7 @@ def main():
 
     done = set()
 
-    for path in tqdm(sorted(glob.glob("{}/*.pk".format(args.log_dir)))):
+    for path in tqdm(sorted(glob.glob("{}/*.pk".format(log_dir)))):
         args = load_args(path)
 
         if pred_args and not pred_args(args):
