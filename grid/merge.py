@@ -47,7 +47,7 @@ def main():
 
         for i in count(random.randint(0, 999_999)):
             i = i % 1_000_000
-            name = "{:05d}.pk".format(i)
+            name = "{:06d}.pk".format(i)
             path_dst = os.path.join(args.log_dir_dst, name)
             if not os.path.isfile(path_dst):
                 break
