@@ -29,7 +29,7 @@ def main():
         for f in glob.glob("{}/*.pk".format(args.log_dir_dst))
     }
 
-    for path_src in glob.glob("{}/*.pk".format(args.log_dir_src)):
+    for path_src in sorted(glob.glob("{}/*.pk".format(args.log_dir_src))):
         a = load_args(path_src)
         if pred_args is not None and not pred_args(a):
             print("{} skipped".format(path_src))
@@ -52,9 +52,7 @@ def main():
             if not os.path.isfile(path_dst):
                 break
 
-        print("[{}] {} -> {}".format(
-            " ".join("{}={}".format(key, value) for key, value in args_src),
-            path_src, path_dst))
+        print("{} -> {}".format(path_src, path_dst))
         os.rename(path_src, path_dst)
 
         done_dst.add(args_src)
