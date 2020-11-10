@@ -24,13 +24,18 @@ def main():
     pred_args = eval(args.pred) if args.pred else None
 
     if os.path.isfile("{}/info".format(args.log_dir)):
-        with open("{}/info".format(args.log_dir), 'rb') as f:
-            info = pickle.load(f)
-            print("last command")
-            if 'cmd' in info:
-                print(info['cmd'])
-            print("git commit    {}".format(info['git']['log']))
-            print("git status    {}".format(info['git']['status']))
+        try:
+            with open("{}/info".format(args.log_dir), 'rb') as f:
+                info = pickle.load(f)
+        except:
+            pass
+        else:
+            if isinstance(info, dict):
+                print("last command")
+                if 'cmd' in info:
+                    print(info['cmd'])
+                print("git commit    {}".format(info['git']['log']))
+                print("git status    {}".format(info['git']['status']))
 
     argss = [pickle.load(open(path, 'rb')) for path in tqdm(glob.glob("{}/*.pk".format(args.log_dir)))]
     argss = [a for a in argss if a is not None]
