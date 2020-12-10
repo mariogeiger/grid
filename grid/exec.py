@@ -127,6 +127,8 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
             if not os.path.isfile(fp):
                 break
 
+        text = "{} {}".format(fp, text)
+
         cmd = command.format(output=fp, **dict(param))
 
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
