@@ -49,16 +49,17 @@ def print_output(out, text, path):
     for line in iter(out.readline, b''):
         output = line.decode("utf-8")
         m = re.findall(r"job (\d+)", output)  # srun: job (\d+) has been allocated resources
-        if m:
-            text = "{} {}".format(m[0], text)
-        print("[{}] {}".format(text, output), end="")
+        if m and len(text) < 2:
+            text.insert(0, m[0])
+
+        print("[{}] {}".format(" ".join(text), output), end="")
 
         if path is not None:
             with open(path, 'ta') as f:
-                f.write("{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), text, line.decode("utf-8")))
+                f.write("{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), " ".join(text), line.decode("utf-8")))
 
     if path is None:
-        print("[{}] terminated".format(text))
+        print("[{}] terminated".format(" ".join(text)))
 
 
 def exec_grid(log_dir, cmd, params, sleep=0, n=None):
@@ -133,6 +134,7 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
                 break
 
         text = "{} {}".format(fp, text)
+        text = [text]
 
         cmd = command.format(output=fp, **dict(param))
 
