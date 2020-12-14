@@ -1,9 +1,10 @@
-# pylint: disable=missing-docstring, invalid-name, line-too-long
+# pylint: disable=missing-docstring, invalid-name, line-too-long, bare-except
 import datetime
 import glob
 import os
 import pickle
 import random
+import re
 import shlex
 import subprocess
 import threading
@@ -46,7 +47,11 @@ def print_output(out, text, path):
         open(path, 'ta').close()
 
     for line in iter(out.readline, b''):
-        print("[{}] {}".format(text, line.decode("utf-8")), end="")
+        output = line.decode("utf-8")
+        m = re.findall(r"job (\d+)", output)  # srun: job (\d+) has been allocated resources
+        if m:
+            text = "{} {}".format(m[0], text)
+        print("[{}] {}".format(text, output), end="")
 
         if path is not None:
             with open(path, 'ta') as f:
