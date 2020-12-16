@@ -150,7 +150,7 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
         threads.append(t)
 
         running.append(p)
-        print("[{}] {}".format(text, cmd))
+        print("[{}] {}".format(" ".join(text), cmd))
 
     for x in running:
         x.wait()
