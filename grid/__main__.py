@@ -25,6 +25,10 @@ def main():
             name, typ, vals, opt = params[-1]
             if x in ["-r"]:
                 opt.add(x)
+            elif ":" in x:
+                start, end = x.split(":")
+                for i in range(int(start), int(end)):
+                    vals.append(i)
             else:
                 if typ is None:
                     vals.append(eval(x))
