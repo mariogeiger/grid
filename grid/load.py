@@ -102,9 +102,11 @@ def args_intersection(argss):
 
 
 def args_todict(r):
+    if not isinstance(r, dict):
+        r = r.__dict__
     return {
         key: hashable(value)
-        for key, value in r.__dict__.items()
+        for key, value in r.items()
         if key not in ['pickle', 'output']
     }
 

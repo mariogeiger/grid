@@ -13,6 +13,12 @@ except ModuleNotFoundError:
         return x
 
 
+def to_dict(a):
+    if not isinstance(a, dict):
+        return a.__dict__
+    return a
+
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -24,7 +30,7 @@ def main():
         [
             {
                 key: value
-                for key, value in r.__dict__.items()
+                for key, value in to_dict(r).items()
                 if key not in ['pickle', 'output']
             }
             for r in [

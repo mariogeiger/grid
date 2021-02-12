@@ -40,6 +40,12 @@ except ModuleNotFoundError:
         return x
 
 
+def to_dict(a):
+    if not isinstance(a, dict):
+        return a.__dict__
+    return a
+
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -54,7 +60,7 @@ def main():
     log_dir = args.log_dir
 
     def tup(args):
-        d = [(key, value) for key, value in args.__dict__.items() if key not in ['pickle', 'output']]
+        d = [(key, value) for key, value in to_dict(args).items() if key not in ['pickle', 'output']]
         return tuple(sorted(d))
 
     done = set()

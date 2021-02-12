@@ -1,6 +1,12 @@
 # pylint: disable=eval-used, missing-docstring, invalid-name, line-too-long
 
 
+def to_dict(a):
+    if not isinstance(a, dict):
+        return a.__dict__
+    return a
+
+
 def print_info(argss, thr=5):
     def hashable(x):
         if isinstance(x, list):
@@ -16,7 +22,7 @@ def print_info(argss, thr=5):
     argss = [
         {
             key: hashable(value)
-            for key, value in r.__dict__.items()
+            for key, value in to_dict(r).items()
             if key not in ['pickle', 'output']
         }
         for r in argss

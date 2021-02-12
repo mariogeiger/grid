@@ -8,6 +8,12 @@ from itertools import count
 from grid.exec import load_args, load_data
 
 
+def to_dict(a):
+    if not isinstance(a, dict):
+        return a.__dict__
+    return a
+
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -21,7 +27,7 @@ def main():
     pred_run = eval(args.pred_run) if args.pred_run else None
 
     def tup(args):
-        d = [(key, value) for key, value in args.__dict__.items() if key not in ['pickle', 'output']]
+        d = [(key, value) for key, value in to_dict(args).items() if key not in ['pickle', 'output']]
         return tuple(sorted(d))
 
     done_dst = {
