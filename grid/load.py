@@ -134,6 +134,14 @@ def args_diff(argss):
     ]
 
 
+def get_args_item(args, key):
+    if hasattr(args, key):
+        return getattr(args, key)
+    if isinstance(args, dict) and key in args:
+        return args[key]
+    return None
+
+
 def load_grouped(directory, group_by, pred_args=None, pred_run=None):
     """
 
@@ -167,7 +175,7 @@ def group_runs(runs, group_by):
             r
             for r in runs
             if all(
-                (hashable(getattr(r['args'], k)) == v) if hasattr(r['args'], k) else (v is None)
+                hashable(get_args_item(r['args'], k)) == v
                 for k, v in var.items()
             )
         ]
