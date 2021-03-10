@@ -29,6 +29,13 @@ def load_args(f):
         return pickle.load(rb)
 
 
+def to_dict(x):
+    if isinstance(x, dict):
+        return x
+
+    return x.__dict__
+
+
 def load_data(f):
     for _ in range(5):
         try:
@@ -88,8 +95,8 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
         if f not in done_files:
             done_files.add(f)
 
-            a = load_args(f)
-            a = tuple((name, getattr(a, name) if hasattr(a, name) else None) for name, _vals in params)
+            a = to_dict(load_args(f))
+            a = tuple((name, a[name] if name in a else None) for name, _vals in params)
             done_param[a] = f
 
     running = []
@@ -116,8 +123,8 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
             if f not in done_files:
                 done_files.add(f)
 
-                a = load_args(f)
-                a = tuple((name, getattr(a, name) if hasattr(a, name) else None) for name, _vals in params)
+                a = to_dict(load_args(f))
+                a = tuple((name, a[name] if name in a else None) for name, _vals in params)
                 done_param[a] = f
 
         text = " ".join("{}={}".format(name, val) for name, val in param)
