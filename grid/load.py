@@ -16,11 +16,31 @@ Run = namedtuple('Run', 'file, time, args, data')
 GLOBALCACHE = defaultdict(dict)
 
 
-def load(directory, pred_args=None, pred_run=None, cache=True, extractor=None):
-    return list(load_iter(directory, pred_args, pred_run, cache, extractor))
+def deepmap(fun, data):
+    if isinstance(data, (list, tuple, set, frozenset)):
+        return type(data)(deepmap(fun, x) for x in data)
+
+    if isinstance(data, dict):
+        return {key: deepmap(fun, x) for key, x in data.items()}
+
+    return fun(data)
 
 
-def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=None):
+def torch_to_numpy(data):
+    import torch
+    def fun(x):
+        if isinstance(x, torch.Tensor):
+            return x.numpy()
+        else:
+            return x
+    return deepmap(fun, data)
+
+
+def load(directory, pred_args=None, pred_run=None, cache=True, extractor=None, convertion=None):
+    return list(load_iter(directory, pred_args, pred_run, cache, extractor, convertion))
+
+
+def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=None, convertion=None):
     if extractor is not None:
         cache = False
 
@@ -29,7 +49,7 @@ def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=No
     if not os.path.isdir(directory):
         raise NotADirectoryError('{} does not exists'.format(directory))
 
-    cache_runs = GLOBALCACHE[directory] if cache else dict()
+    cache_runs = GLOBALCACHE[(directory, convertion)] if cache else dict()
 
     for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pk')))):
         time = os.path.getctime(file)
@@ -59,6 +79,9 @@ def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=No
 
         if extractor is not None:
             data = extractor(data)
+
+        if convertion == 'torch_to_numpy':
+            data = torch_to_numpy(data)
 
         x = Run(file=file, time=time, args=args, data=data)
         cache_runs[file] = x
@@ -142,7 +165,7 @@ def get_args_item(args, key):
     return None
 
 
-def load_grouped(directory, group_by, pred_args=None, pred_run=None):
+def load_grouped(directory, group_by, pred_args=None, pred_run=None, convertion=None):
     """
 
     example:
@@ -154,7 +177,7 @@ def load_grouped(directory, group_by, pred_args=None, pred_run=None):
         plot(rs, label=param)
 
     """
-    runs = load(directory, pred_args=pred_args, pred_run=pred_run)
+    runs = load(directory, pred_args=pred_args, pred_run=pred_run, convertion=convertion)
 
     return group_runs(runs, group_by)
 
