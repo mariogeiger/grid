@@ -166,7 +166,7 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
         t.join()
 
 
-def exec_blocking(log_dir, cmd, param):
+def exec_one(log_dir, cmd, param):
     command = "{} --output {{output}}".format(cmd)
 
     for name, _val in param:
@@ -188,13 +188,16 @@ def exec_blocking(log_dir, cmd, param):
 
     if param in done_param:
         f = done_param[param]
-        while True:
-            try:
-                r = load_data(f)
-            except EOFError:
-                time.sleep(1)
-            else:
-                return r
+        def ret(load):
+            if load:
+                while True:
+                    try:
+                        r = load_data(f)
+                    except EOFError:
+                        time.sleep(1)
+                    else:
+                        return r
+        return ret
 
     for i in count(random.randint(0, 999_999)):
         i = i % 1_000_000
@@ -216,8 +219,11 @@ def exec_blocking(log_dir, cmd, param):
     t2.daemon = True
     t2.start()
 
-    p.wait()
-    t1.join()
-    t2.join()
+    def ret(load):
+        p.wait()
+        t1.join()
+        t2.join()
 
-    return load_data(fp)
+        if load:
+            return load_data(fp)
+    return ret
