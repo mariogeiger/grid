@@ -142,7 +142,12 @@ def main():
     done = set()
 
     for path in tqdm(sorted(glob.glob("{}/*.pk".format(log_dir)))):
-        args = load_args(path)
+        try:
+            args = load_args(path)
+        except EOFError:
+            print("rm empty args: {}".format(path))
+            os.remove(path)
+            continue
 
         if pred_args and not pred_args(args):
             print("pred_args failed: {}".format(path))
@@ -152,7 +157,7 @@ def main():
         try:
             run = load_data(path)
         except EOFError:
-            print("rm empty: {}".format(path))
+            print("rm empty data: {}".format(path))
             os.remove(path)
             continue
 
