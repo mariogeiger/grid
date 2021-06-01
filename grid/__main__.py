@@ -31,7 +31,11 @@ def main():
                     vals.append(i)
             else:
                 if typ is None:
-                    vals.append(eval(x))
+                    x = eval(x)
+                    if isinstance(x, list):
+                        vals += x
+                    else:
+                        vals.append(x)
                 else:
                     vals.append(typ(x))
 
