@@ -1,6 +1,6 @@
-# pylint: disable=eval-used, missing-docstring, line-too-long, invalid-name
 import argparse
-from grid.exec import exec_grid
+from grid import exec_list
+from tqdm.auto import tqdm
 
 
 def main():
@@ -38,7 +38,7 @@ def main():
     assert all([opt == set() or opt == {"-r"} for name, typ, vals, opt in params])
     params = [(name, reversed(vals) if "-r" in opt else vals) for name, typ, vals, opt in params]
 
-    exec_grid(args.log_dir, args.cmd, params, args.sleep, args.n)
+    exec_list(args.log_dir, args.cmd, params, args.sleep, args.n, tqdm)
 
 
 if __name__ == '__main__':

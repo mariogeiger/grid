@@ -1,4 +1,3 @@
-# pylint: disable=missing-docstring, bare-except, import-error, invalid-name, line-too-long
 import glob
 import os
 import random

@@ -1,4 +1,3 @@
-# pylint: disable=missing-docstring, invalid-name, line-too-long, bare-except
 import datetime
 import glob
 import os
@@ -10,43 +9,27 @@ import subprocess
 import threading
 import time
 from itertools import count, product
-
-try:
-    from tqdm.auto import tqdm
-except ModuleNotFoundError:
-    def tqdm(x):
-        return x
+from grid import load_file, load_args, to_dict
 
 
-def load_args(f):
-    for _ in range(5):
-        try:
-            with open(f, 'rb') as rb:
-                return pickle.load(rb)
-        except:
-            time.sleep(0.1)
-    with open(f, 'rb') as rb:
-        return pickle.load(rb)
+def identity(x):
+    return x
 
 
-def to_dict(x):
-    if isinstance(x, dict):
-        return x
+def launch_command(cmd, prefix, stderr_filename):
+    p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    return x.__dict__
+    text = [prefix]
 
+    t1 = threading.Thread(target=print_output, args=(p.stdout, text, None))
+    t1.daemon = True
+    t1.start()
 
-def load_data(f):
-    for _ in range(5):
-        try:
-            with open(f, 'rb') as rb:
-                pickle.load(rb)
-                return pickle.load(rb)
-        except:
-            time.sleep(0.1)
-    with open(f, 'rb') as rb:
-        pickle.load(rb)
-        return pickle.load(rb)
+    t2 = threading.Thread(target=print_output, args=(p.stderr, text, stderr_filename))
+    t2.daemon = True
+    t2.start()
+
+    return p, t1, t2
 
 
 def print_output(out, text, path):
@@ -69,8 +52,17 @@ def print_output(out, text, path):
         print("[{}] terminated".format(" ".join(text)))
 
 
-def exec_grid(log_dir, cmd, params, sleep=0, n=None):
-    command = "{} --output {{output}}".format(cmd)
+def new_filename(log_dir):
+    for i in count(random.randint(0, 999_999)):
+        i = i % 1_000_000
+        fn = "{:06d}.pk".format(i)
+        fp = os.path.join(log_dir, fn)
+        if not os.path.isfile(fp):
+            return fp
+
+
+def exec_list(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
+    command = f"{cmd} --output {{output}}"
 
     for name, _vals in params:
         command += " --{0} {{{0}}}".format(name)
@@ -114,9 +106,9 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
                 time.sleep(0.2)
 
         if os.path.isfile('stop'):
-            print()
-            print('  >> stop file detected!  <<')
-            print()
+            print(flush=True)
+            print('  >> stop file detected!  <<', flush=True)
+            print(flush=True)
             break
 
         for f in glob.glob(os.path.join(log_dir, "*.pk")):
@@ -127,37 +119,20 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
                 a = tuple((name, a[name] if name in a else None) for name, _vals in params)
                 done_param[a] = f
 
-        text = " ".join("{}={}".format(name, val) for name, val in param)
+        param_str = " ".join(f"{name}={val}" for name, val in param)
 
         if param in done_param:
-            print('[{}] {}'.format(text, done_param[param]))
+            print(f'[{param_str}] {done_param[param]}', flush=True)
             continue
 
-        for i in count(random.randint(0, 999_999)):
-            i = i % 1_000_000
-            fn = "{:06d}.pk".format(i)
-            fp = os.path.join(log_dir, fn)
-            if not os.path.isfile(fp):
-                break
-
-        text = "{} {}".format(fp, text)
-        text = [text]
-
+        fp = new_filename(log_dir)
         cmd = command.format(output=fp, **dict(param))
 
-        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        t = threading.Thread(target=print_output, args=(p.stdout, text, None))
-        t.daemon = True
-        t.start()
-        threads.append(t)
-        t = threading.Thread(target=print_output, args=(p.stderr, text, os.path.join(log_dir, 'stderr')))
-        t.daemon = True
-        t.start()
-        threads.append(t)
-
+        p, t1, t2 = launch_command(cmd, f"{fp} {param_str}", os.path.join(log_dir, 'stderr'))
         running.append(p)
-        print("[{}] {}".format(" ".join(text), cmd))
+        threads += [t1, t2]
+
+        print(f"[{fp} {param_str}] {cmd}", flush=True)
 
     for x in running:
         x.wait()
@@ -166,8 +141,8 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None):
         t.join()
 
 
-def exec_one(log_dir, cmd, param):
-    command = "{} --output {{output}}".format(cmd)
+def exec_one(log_dir, cmd, param, tqdm=identity):
+    command = f"{cmd} --output {{output}}"
 
     for name, _val in param:
         command += " --{0} {{{0}}}".format(name)
@@ -192,32 +167,20 @@ def exec_one(log_dir, cmd, param):
             if load:
                 while True:
                     try:
-                        r = load_data(f)
+                        _, r = load_file(f)
                     except EOFError:
                         time.sleep(1)
                     else:
                         return r
         return ret
 
-    for i in count(random.randint(0, 999_999)):
-        i = i % 1_000_000
-        fn = "{:06d}.pk".format(i)
-        fp = os.path.join(log_dir, fn)
-        if not os.path.isfile(fp):
-            break
+    fp = new_filename(log_dir)
 
-    cmd = command.format(output=fp, **dict(param))
-
-    p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    text = " ".join("{}={}".format(name, val) for name, val in param)
-
-    t1 = threading.Thread(target=print_output, args=(p.stdout, text, None))
-    t1.daemon = True
-    t1.start()
-    t2 = threading.Thread(target=print_output, args=(p.stderr, text, os.path.join(log_dir, 'stderr')))
-    t2.daemon = True
-    t2.start()
+    p, t1, t2 = launch_command(
+        command.format(output=fp, **dict(param)),
+        " ".join("{}={}".format(name, val) for name, val in param),
+        os.path.join(log_dir, 'stderr')
+    )
 
     def ret(load):
         p.wait()
@@ -225,5 +188,6 @@ def exec_one(log_dir, cmd, param):
         t2.join()
 
         if load:
-            return load_data(fp)
+            _, r = load_file(fp)
+            return r
     return ret

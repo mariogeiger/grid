@@ -1,11 +1,8 @@
-# pylint: disable=C
 import argparse
 import glob
 import os
-import random
-from itertools import count
 
-from grid.exec import load_args, load_data
+from grid import load_file, load_args, new_filename
 
 
 def to_dict(a):
@@ -36,12 +33,13 @@ def main():
     }
 
     for path_src in sorted(glob.glob("{}/*.pk".format(args.log_dir_src))):
-        a = load_args(path_src)
+        f = load_file(path_src)
+        a = next(f)
         if pred_args is not None and not pred_args(a):
             print("{} skipped".format(path_src))
             continue
 
-        if pred_run is not None and not pred_run(load_data(path_src)):
+        if pred_run is not None and not pred_run(next(f)):
             print("{} skipped".format(path_src))
             continue
 
@@ -51,12 +49,7 @@ def main():
             print("{} ok".format(path_src))
             continue
 
-        for i in count(random.randint(0, 999_999)):
-            i = i % 1_000_000
-            name = "{:06d}.pk".format(i)
-            path_dst = os.path.join(args.log_dir_dst, name)
-            if not os.path.isfile(path_dst):
-                break
+        path_dst = new_filename(args.log_dir_dst)
 
         print("{} -> {}".format(path_src, path_dst))
         os.rename(path_src, path_dst)

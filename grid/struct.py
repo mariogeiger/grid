@@ -1,4 +1,3 @@
-# pylint: disable=C, no-member
 import argparse
 import json
 
