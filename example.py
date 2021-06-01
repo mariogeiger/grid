@@ -10,7 +10,7 @@ def execute(args):
         time.sleep(0.5)
         print("computation {} / 3".format(i + 1), flush=True)  # need flush=True
 
-    result_of_heavy_computation = args.a / args.b
+    result_of_heavy_computation = args["a"] / args["b"]
 
     return {
         'args': args,
@@ -24,17 +24,17 @@ def main():
     parser.add_argument("--a", type=int, required=True)
     parser.add_argument("--b", type=int, required=True)
 
-    args = parser.parse_args()
+    args = parser.parse_args().__dict__
 
-    with open(args.output, 'wb') as handle:
+    with open(args["output"], 'wb') as handle:
         pickle.dump(args,  handle)
     try:
         data = execute(args)
-        with open(args.output, 'wb') as handle:
+        with open(args["output"], 'wb') as handle:
             pickle.dump(args, handle)
             pickle.dump(data, handle)
     except:
-        os.remove(args.output)
+        os.remove(args["output"])
         raise
 
 

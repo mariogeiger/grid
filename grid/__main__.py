@@ -1,5 +1,5 @@
 import argparse
-from grid import exec_list
+from grid import exec_grid
 from tqdm.auto import tqdm
 
 
@@ -38,7 +38,7 @@ def main():
     assert all([opt == set() or opt == {"-r"} for name, typ, vals, opt in params])
     params = [(name, reversed(vals) if "-r" in opt else vals) for name, typ, vals, opt in params]
 
-    exec_list(args.log_dir, args.cmd, params, args.sleep, args.n, tqdm)
+    exec_grid(args.log_dir, args.cmd, params, args.sleep, args.n, tqdm)
 
 
 if __name__ == '__main__':

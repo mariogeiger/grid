@@ -2,13 +2,7 @@ import argparse
 import glob
 import os
 
-from grid import load_file, load_args, new_filename
-
-
-def to_dict(a):
-    if not isinstance(a, dict):
-        return a.__dict__
-    return a
+from grid import load_file, load_args, new_filename, to_dict
 
 
 def main():

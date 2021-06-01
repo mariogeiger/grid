@@ -61,7 +61,7 @@ def new_filename(log_dir):
             return fp
 
 
-def exec_list(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
+def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
     command = f"{cmd} --output {{output}}"
 
     for name, _vals in params:
