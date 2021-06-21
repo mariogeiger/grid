@@ -1,11 +1,10 @@
 import glob
-import itertools
 import os
 import pickle
 import time
 from collections import defaultdict, namedtuple
 
-from grid import args_intersection, args_union, hash_able, keyall, to_dict
+from grid import args_intersection, args_union, keyall, to_dict
 
 Run = namedtuple('Run', 'file, ctime, args, data')
 GLOBALCACHE = defaultdict(dict)
@@ -120,31 +119,31 @@ def load_grouped(directory, group_by, pred_args=None, pred_run=None, convertion=
     """
     runs = load(directory, pred_args=pred_args, pred_run=pred_run, convertion=convertion, tqdm=tqdm)
 
-    return group_runs(runs, group_by)
+    return group_runs(runs, group_by, tqdm=tqdm)
 
 
-def group_runs(runs, group_by):
+def group_runs(runs, group_by, tqdm=identity):
     args = args_intersection([r['args'] for r in runs])
     variants = {
         key: sorted(values, key=keyall)
         for key, values in args_union([r['args'] for r in runs]).items()
         if len(values) > 1 and key not in group_by
     }
+    keys = sorted(variants.keys())
+    famillies = sorted({tuple(r['args'][k] for k in keys) for r in runs})
 
     groups = []
-    for vals in itertools.product(*variants.values()):
-        var = {k: v for k, v in zip(variants, vals)}
-
+    for vals in tqdm(famillies):
         rs = [
             r
             for r in runs
             if all(
-                hash_able(to_dict(r['args'])[k]) == v
-                for k, v in var.items()
+                to_dict(r['args'])[k] == v
+                for k, v in zip(keys, vals)
             )
         ]
         if rs:
-            groups.append((var, rs))
+            groups.append(({k: v for k, v in zip(keys, vals)}, rs))
     assert len(runs) == sum(len(rs) for _a, rs in groups)
 
     return args, groups
