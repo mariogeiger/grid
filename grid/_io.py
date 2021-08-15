@@ -130,7 +130,7 @@ def group_runs(runs, group_by, tqdm=identity):
         if len(values) > 1 and key not in group_by
     }
     keys = sorted(variants.keys())
-    famillies = sorted({tuple(r['args'][k] for k in keys) for r in runs})
+    famillies = sorted({tuple(to_dict(r['args'])[k] for k in keys) for r in runs})
 
     groups = []
     for vals in tqdm(famillies):
