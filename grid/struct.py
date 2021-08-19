@@ -98,7 +98,7 @@ def for_human(r):
         t = tuple(for_human(r) for r in x)
         return (to_kmg(nb), t)
 
-    return (to_kmg(nb), x)
+    return x  # (to_kmg(nb), x)
 
 
 def main():
