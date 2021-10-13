@@ -2,6 +2,7 @@ import argparse
 import json
 
 import torch
+import numpy as np
 
 from grid import load_iter
 
@@ -62,6 +63,9 @@ def get_structure(r):
             print("Warning: the view of a larger tensor is stored, condider saving a clone to reduce size of the file")
             return (nb, 'tensor!')
         return (nb, 'tensor')
+
+    if isinstance(r, np.ndarray):
+        return (r.size * r.itemsize, "np.array")
 
     if r is None:
         return (0, 'none')
