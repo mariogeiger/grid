@@ -54,6 +54,12 @@ def load(directory, pred_args=None, pred_run=None, cache=True, extractor=None, c
 
 
 def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=None, convertion=None, tqdm=identity):
+    for d in directory.split(":"):
+        for r in _load_iter(d, pred_args, pred_run, cache, extractor, convertion, tqdm):
+            yield r
+
+
+def _load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=None, convertion=None, tqdm=identity):
     if extractor is not None:
         cache = False
 
