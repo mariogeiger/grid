@@ -26,6 +26,7 @@ def deepmap(fun, data):
 
 def torch_to_numpy(data):
     import torch
+
     def fun(x):
         if isinstance(x, torch.Tensor):
             return x.numpy()
@@ -136,7 +137,7 @@ def group_runs(runs, group_by, tqdm=identity):
         if len(values) > 1 and key not in group_by
     }
     keys = sorted(variants.keys())
-    famillies = sorted({tuple(to_dict(r['args'])[k] for k in keys) for r in runs})
+    famillies = sorted({tuple(to_dict(r['args']).get(k, None) for k in keys) for r in runs}, key=keyall)
 
     groups = []
     for vals in tqdm(famillies):
@@ -144,7 +145,7 @@ def group_runs(runs, group_by, tqdm=identity):
             r
             for r in runs
             if all(
-                to_dict(r['args'])[k] == v
+                to_dict(r['args']).get(k, None) == v
                 for k, v in zip(keys, vals)
             )
         ]
