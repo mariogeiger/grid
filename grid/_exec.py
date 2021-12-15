@@ -141,7 +141,52 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
         t.join()
 
 
+class Job:
+    def __init__(self, f, p, t1, t2):
+        self.f = f
+        self.p = p
+        self.t1 = t1
+        self.t2 = t2
+
+    def finished(self):
+        return self.p is None or self.p.poll() is not None
+
+    def running(self):
+        return self.p is not None and self.p.poll() is None
+
+    def wait(self):
+        if self.p is not None:
+            self.p.wait()
+        if self.t1 is not None:
+            self.t1.join()
+        if self.t2 is not None:
+            self.t2.join()
+
+    def load(self):
+        self.wait()
+
+        while True:
+            try:
+                _, r = load_file(self.f)
+            except EOFError:
+                time.sleep(1)
+            else:
+                return r
+
+
 def exec_one(log_dir, cmd, param, tqdm=identity):
+    """Execute a single command with a list of parameters.
+
+    Args:
+        log_dir (str): The directory to store the output.
+        cmd (str): The command to execute.
+        param (list): A list of tuples (name, parameter) to pass to the command.
+        tqdm (callable): A progress bar.
+
+    Returns:
+        A Job object.
+    """
+
     command = f"{cmd} --output {{output}}"
 
     for name, _val in param:
@@ -163,16 +208,7 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
 
     if param in done_param:
         f = done_param[param]
-        def ret(load):
-            if load:
-                while True:
-                    try:
-                        _, r = load_file(f)
-                    except EOFError:
-                        time.sleep(1)
-                    else:
-                        return r
-        return ret
+        return Job(f, None, None, None)
 
     fp = new_filename(log_dir)
 
@@ -181,13 +217,4 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
         " ".join("{}={}".format(name, val) for name, val in param),
         os.path.join(log_dir, 'stderr')
     )
-
-    def ret(load):
-        p.wait()
-        t1.join()
-        t2.join()
-
-        if load:
-            _, r = load_file(fp)
-            return r
-    return ret
+    return Job(fp, p, t1, t2)
