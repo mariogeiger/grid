@@ -180,7 +180,7 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
     Args:
         log_dir (str): The directory to store the output.
         cmd (str): The command to execute.
-        param (list): A list of tuples (name, parameter) to pass to the command.
+        param (tuple): A tuple of tuples (name, parameter) to pass to the command.
         tqdm (callable): A progress bar.
 
     Returns:
@@ -189,8 +189,8 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
 
     command = f"{cmd} --output {{output}}"
 
-    for name, _val in param:
-        command += " --{0} {{{0}}}".format(name)
+    for name, value in param:
+        command += f" --{name} {value}"
 
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
@@ -203,7 +203,7 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
             done_files.add(f)
 
             a = to_dict(load_args(f))
-            a = tuple((name, a[name] if name in a else None) for name, _vals in param)
+            a = tuple((name, a[name] if name in a else None) for name, _val in param)
             done_param[a] = f
 
     if param in done_param:
@@ -213,7 +213,7 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
     fp = new_filename(log_dir)
 
     p, t1, t2 = launch_command(
-        command.format(output=fp, **dict(param)),
+        command.format(output=fp),
         " ".join("{}={}".format(name, val) for name, val in param),
         os.path.join(log_dir, 'stderr')
     )
