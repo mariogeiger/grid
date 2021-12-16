@@ -186,30 +186,24 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
     Returns:
         A Job object.
     """
-
-    command = f"{cmd} --output {{output}}"
-
-    for name, value in param:
-        command += f" --{name} {value}"
-
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
-
-    done_param = dict()
 
     for f in tqdm(glob.glob(os.path.join(log_dir, "*.pk"))):
         a = to_dict(load_args(f))
         a = tuple((name, a[name] if name in a else None) for name, _val in param)
-        done_param[a] = f
 
-    if param in done_param:
-        f = done_param[param]
-        return Job(f, None, None, None)
+        if param == a:
+            return Job(f, None, None, None)
 
     fp = new_filename(log_dir)
+    command = f"{cmd} --output {fp}"
+
+    for name, value in param:
+        command += f" --{name} {value}"
 
     p, t1, t2 = launch_command(
-        command.format(output=fp),
+        command,
         " ".join("{}={}".format(name, val) for name, val in param),
         os.path.join(log_dir, 'stderr')
     )
