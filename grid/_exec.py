@@ -195,16 +195,12 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
 
-    done_files = set()
     done_param = dict()
 
     for f in tqdm(glob.glob(os.path.join(log_dir, "*.pk"))):
-        if f not in done_files:
-            done_files.add(f)
-
-            a = to_dict(load_args(f))
-            a = tuple((name, a[name] if name in a else None) for name, _val in param)
-            done_param[a] = f
+        a = to_dict(load_args(f))
+        a = tuple((name, a[name] if name in a else None) for name, _val in param)
+        done_param[a] = f
 
     if param in done_param:
         f = done_param[param]
