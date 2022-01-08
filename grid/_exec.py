@@ -221,7 +221,7 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
 
     p, t1, t2 = launch_command(
         command,
-        " ".join("{}={}".format(name, val) for name, val in param),
+        " ".join("{}={}".format(name, format_value(val)) for name, val in param),
         os.path.join(log_dir, 'stderr')
     )
     return Job(fp, p, t1, t2)
