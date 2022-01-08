@@ -7,6 +7,7 @@ import re
 import shlex
 import subprocess
 import threading
+import math
 import time
 from itertools import count, product
 from grid import load_file, load_args, to_dict
@@ -59,6 +60,22 @@ def new_filename(log_dir):
         fp = os.path.join(log_dir, fn)
         if not os.path.isfile(fp):
             return fp
+
+
+def is_integer(x):
+    return abs(round(x) - x) < 1e-6
+
+
+def format_value(val):
+    if isinstance(val, float):
+        if is_integer(val):
+            return str(int(val))
+        if is_integer(math.log10(val)):
+            return f"10**{round(math.log10(val))}"
+        if is_integer(math.log2(val)):
+            return f"2**{round(math.log2(val))}"
+    else:
+        return str(val)
 
 
 def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
@@ -119,7 +136,7 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
                 a = tuple((name, a[name] if name in a else None) for name, _vals in params)
                 done_param[a] = f
 
-        param_str = " ".join(f"{name}={val}" for name, val in param)
+        param_str = " ".join(f"{name}={format_value(val)}" for name, val in param)
 
         if param in done_param:
             print(f'[{param_str}] {done_param[param]}', flush=True)
