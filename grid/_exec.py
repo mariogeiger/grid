@@ -68,7 +68,7 @@ def is_integer(x):
 
 def format_value(val):
     if isinstance(val, float):
-        if is_integer(val):
+        if is_integer(val) and val < 50:
             return str(int(val))
         if is_integer(math.log10(val)):
             return f"10**{round(math.log10(val))}"
