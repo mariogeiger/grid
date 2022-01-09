@@ -10,7 +10,7 @@ import threading
 import math
 import time
 from itertools import count, product
-from grid import load_file, load_args, to_dict
+from grid import load_file, load_args, to_dict, load_iter
 
 
 def identity(x):
@@ -199,11 +199,7 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
 
-    for f in tqdm(glob.glob(os.path.join(log_dir, "*.pk"))):
-        try:
-            a = to_dict(load_args(f))
-        except EOFError:
-            continue
+    for f, a in load_iter(log_dir, convertion='file_args', tqdm=tqdm):
         a = tuple((name, a[name] if name in a else None) for name, _val in param)
 
         if param == a:

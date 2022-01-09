@@ -102,6 +102,12 @@ def _load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=N
 
         if convertion == 'torch_to_numpy':
             data = torch_to_numpy(data)
+        elif convertion == 'args':
+            data = args
+        elif convertion == 'file_args':
+            data = (file, args)
+        else:
+            assert convertion is None
 
         x = Run(file=file, ctime=ctime, args=args, data=data)
         cache_runs[file] = x
