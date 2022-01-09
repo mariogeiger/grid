@@ -200,7 +200,10 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
         os.mkdir(log_dir)
 
     for f in tqdm(glob.glob(os.path.join(log_dir, "*.pk"))):
-        a = to_dict(load_args(f))
+        try:
+            a = to_dict(load_args(f))
+        except:
+            continue
         a = tuple((name, a[name] if name in a else None) for name, _val in param)
 
         if param == a:
