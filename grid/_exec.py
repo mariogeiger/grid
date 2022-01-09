@@ -67,15 +67,14 @@ def is_integer(x):
 
 
 def format_value(val):
-    if isinstance(val, float):
+    if isinstance(val, (float, int)):
         if is_integer(val) and val < 50:
             return str(int(val))
         if is_integer(math.log10(val)):
             return f"10**{round(math.log10(val))}"
         if is_integer(math.log2(val)):
             return f"2**{round(math.log2(val))}"
-    else:
-        return str(val)
+    return str(val)
 
 
 def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
