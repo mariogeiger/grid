@@ -202,7 +202,7 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
     for f in tqdm(glob.glob(os.path.join(log_dir, "*.pk"))):
         try:
             a = to_dict(load_args(f))
-        except:
+        except EOFError:
             continue
         a = tuple((name, a[name] if name in a else None) for name, _val in param)
 

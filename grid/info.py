@@ -51,7 +51,7 @@ def main():
         try:
             with open("{}/info".format(args.log_dir), 'rb') as f:
                 info = pickle.load(f)
-        except:
+        except (pickle.PickleError, EOFError):
             pass
         else:
             if isinstance(info, dict):

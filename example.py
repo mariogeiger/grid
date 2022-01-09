@@ -27,7 +27,7 @@ def main():
     args = parser.parse_args().__dict__
 
     with open(args["output"], 'wb') as handle:
-        pickle.dump(args,  handle)
+        pickle.dump(args, handle)
     try:
         data = execute(args)
         with open(args["output"], 'wb') as handle:

@@ -45,7 +45,7 @@ def load_args(f, sleep=0.01, trials=10):
     for _ in range(trials - 1):
         try:
             return next(load_file(f))
-        except:
+        except (pickle.PickleError, FileNotFoundError, EOFError):
             time.sleep(sleep)
     return next(load_file(f))
 
@@ -94,7 +94,7 @@ def _load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=N
                 continue
 
             data = next(f)
-        except:
+        except (pickle.PickleError, FileNotFoundError, EOFError):
             continue
 
         if extractor is not None:
