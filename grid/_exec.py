@@ -62,17 +62,11 @@ def new_filename(log_dir):
             return fp
 
 
-def is_integer(x):
-    return abs(round(x) - x) < 1e-6
-
-
 def format_value(val):
-    if isinstance(val, (float, int)):
-        if is_integer(val) and val < 50:
-            return str(int(val))
-        if is_integer(math.log10(val)):
+    if isinstance(val, (float, int)) and not (1.0 <= val <= 40.0):
+        if math.log10(val).is_integer():
             return f"10**{round(math.log10(val))}"
-        if is_integer(math.log2(val)):
+        if math.log2(val).is_integer():
             return f"2**{round(math.log2(val))}"
     return str(val)
 
