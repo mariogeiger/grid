@@ -63,7 +63,7 @@ def new_filename(log_dir):
 
 
 def format_value(val):
-    if isinstance(val, (float, int)) and not (1.0 <= val <= 40.0):
+    if isinstance(val, (float, int)) and not (val <= 0.0 or 1.0 <= val <= 40.0):
         if math.log10(val).is_integer():
             return f"10**{round(math.log10(val))}"
         if math.log2(val).is_integer():
