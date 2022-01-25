@@ -100,6 +100,9 @@ def _load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=N
         if extractor is not None:
             data = extractor(data)
 
+        if pred_run is not None and not pred_run(data):
+            continue
+
         if convertion == 'torch_to_numpy':
             data = torch_to_numpy(data)
         elif convertion == 'args':
@@ -111,9 +114,6 @@ def _load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=N
 
         x = Run(file=file, ctime=ctime, args=args, data=data)
         cache_runs[file] = x
-
-        if pred_run is not None and not pred_run(x.data):
-            continue
 
         yield x.data
 
