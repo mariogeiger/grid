@@ -59,8 +59,9 @@ def load(
     extractor=None,
     convertion=None,
     tqdm=identity,
+    with_args=False,
 ):
-    return list(load_iter(directory, pred_args, pred_run, cache, extractor, convertion, tqdm=tqdm))
+    return list(load_iter(directory, pred_args, pred_run, cache, extractor, convertion, tqdm=tqdm, with_args=with_args))
 
 
 def load_iter(
@@ -71,10 +72,14 @@ def load_iter(
     extractor=None,
     convertion=None,
     tqdm=identity,
+    with_args=False,
 ):
     for d in directory.split(":"):
-        for r in _load_iter(d, pred_args, pred_run, cache, extractor, convertion, tqdm):
-            yield r
+        for a, r in _load_iter(d, pred_args, pred_run, cache, extractor, convertion, tqdm):
+            if with_args:
+                yield a, r
+            else:
+                yield r
 
 
 def _load_iter(
@@ -108,7 +113,7 @@ def _load_iter(
             if pred_run is not None and not pred_run(x.data):
                 continue
 
-            yield x.data
+            yield (x.args, x.data)
             continue
 
         try:
@@ -140,7 +145,7 @@ def _load_iter(
         x = Run(file=file, ctime=ctime, args=args, data=data)
         cache_runs[file] = x
 
-        yield x.data
+        yield (x.args, x.data)
 
 
 def load_grouped(directory, group_by, pred_args=None, pred_run=None, convertion=None, tqdm=identity):
