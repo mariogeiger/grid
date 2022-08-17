@@ -46,34 +46,34 @@ def get_structure(r):
         return (nb, t)
 
     if isinstance(r, (int, float)):
-        return (8, 'number')
+        return (8, "number")
 
     if isinstance(r, torch.Tensor) and r.grad_fn is not None:
-        print('detected tensor with tree ', r.grad_fn)
+        print("detected tensor with tree ", r.grad_fn)
         nb = r.numel() * r.element_size()
-        return (nb, 'tensor with tree!')
+        return (nb, "tensor with tree!")
 
     if isinstance(r, torch.Tensor) and r.numel() == 1:
-        return (8, 'number')
+        return (8, "number")
 
     if isinstance(r, torch.Tensor):
         s = r.storage()
         nb = s.size() * s.element_size()
         if r.numel() < s.size():
             print("Warning: the view of a larger tensor is stored, condider saving a clone to reduce size of the file")
-            return (nb, 'tensor!')
-        return (nb, 'tensor')
+            return (nb, "tensor!")
+        return (nb, "tensor")
 
     if isinstance(r, np.ndarray):
         return (r.size * r.itemsize, "np.array")
 
     if r is None:
-        return (0, 'none')
+        return (0, "none")
 
     if isinstance(r, str):
-        return (len(r), 'str')
+        return (len(r), "str")
 
-    return (0, 'unknown')
+    return (0, "unknown")
 
 
 def to_kmg(x):
@@ -121,8 +121,8 @@ def main():
         if args.n and i + 1 >= args.n:
             break
 
-    print('\n\n\n'.join(json.dumps(for_human(s), indent=4, sort_keys=True) for s in structures))
+    print("\n\n\n".join(json.dumps(for_human(s), indent=4, sort_keys=True) for s in structures))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

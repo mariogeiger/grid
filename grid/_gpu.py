@@ -34,7 +34,10 @@ def get_free_gpus(maxLoad=0.5, maxMemory=0.5, maxProc=3):
     procs = [int(x.split()[1]) for x in out if "iB" in x]
 
     for gpu in GPUs:
-        gpu.nproc = max(len([1 for pid, ids in running if gpu.id in ids]), len([1 for p in procs if p == gpu.id]))
+        gpu.nproc = max(
+            len([1 for pid, ids in running if gpu.id in ids]),
+            len([1 for p in procs if p == gpu.id]),
+        )
 
     GPUs = [gpu for gpu in GPUs if gpu.nproc < maxProc]
     random.shuffle(GPUs)

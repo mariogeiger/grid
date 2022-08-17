@@ -1,4 +1,3 @@
-
 def to_dict(a):
     if not isinstance(a, dict):
         return a.__dict__
@@ -13,7 +12,7 @@ def hash_able(x):
     try:
         hash(x)
     except TypeError:
-        return '<not hashable>'
+        return "<not hashable>"
     return x
 
 
@@ -38,31 +37,17 @@ def args_intersection(argss):
 
 
 def args_hash_able(r):
-    return {
-        key: hash_able(value)
-        for key, value in r.items()
-        if key not in ['output']
-    }
+    return {key: hash_able(value) for key, value in r.items() if key not in ["output"]}
 
 
 def args_union(argss):
     argss = [args_hash_able(to_dict(r)) for r in argss]
     keys = {key for r in argss for key in r.keys()}
 
-    return {
-        key: {r[key] if key in r else None for r in argss}
-        for key in keys
-    }
+    return {key: {r[key] if key in r else None for r in argss} for key in keys}
 
 
 def args_diff(argss):
     args = args_intersection(argss)
     argss = [args_hash_able(to_dict(r)) for r in argss]
-    return [
-        {
-            key: a[key]
-            for key in a.keys()
-            if key not in args.keys()
-        }
-        for a in argss
-    ]
+    return [{key: a[key] for key in a.keys() if key not in args.keys()} for a in argss]

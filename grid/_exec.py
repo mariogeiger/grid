@@ -49,7 +49,9 @@ def print_output(out, text, path):
             with open(path, "ta") as f:
                 f.write(
                     "{} [{}] {}".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), " ".join(text), line.decode("utf-8")
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        " ".join(text),
+                        line.decode("utf-8"),
                     )
                 )
 
@@ -220,6 +222,8 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
         command += f" --{name} {value}"
 
     p, t1, t2 = launch_command(
-        command, " ".join("{}={}".format(name, format_value(val)) for name, val in param), os.path.join(log_dir, "stderr")
+        command,
+        " ".join("{}={}".format(name, format_value(val)) for name, val in param),
+        os.path.join(log_dir, "stderr"),
     )
     return Job(fp, p, t1, t2)

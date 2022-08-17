@@ -12,10 +12,7 @@ def execute(args):
 
     result_of_heavy_computation = args["a"] / args["b"]
 
-    return {
-        'args': args,
-        'division': result_of_heavy_computation
-    }
+    return {"args": args, "division": result_of_heavy_computation}
 
 
 def main():
@@ -26,11 +23,11 @@ def main():
 
     args = parser.parse_args().__dict__
 
-    with open(args["output"], 'wb') as handle:
+    with open(args["output"], "wb") as handle:
         pickle.dump(args, handle)
     try:
         data = execute(args)
-        with open(args["output"], 'wb') as handle:
+        with open(args["output"], "wb") as handle:
             pickle.dump(args, handle)
             pickle.dump(data, handle)
     except:

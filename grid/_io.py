@@ -6,7 +6,7 @@ from collections import defaultdict, namedtuple
 
 from grid import args_intersection, args_union, keyall, to_dict
 
-Run = namedtuple('Run', 'file, ctime, args, data')
+Run = namedtuple("Run", "file, ctime, args, data")
 GLOBALCACHE = defaultdict(dict)
 
 
@@ -32,11 +32,12 @@ def torch_to_numpy(data):
             return x.numpy()
         else:
             return x
+
     return deepmap(fun, data)
 
 
 def load_file(f):
-    with open(f, 'rb') as rb:
+    with open(f, "rb") as rb:
         yield to_dict(pickle.load(rb))
         yield pickle.load(rb)
 
@@ -50,28 +51,52 @@ def load_args(f, sleep=0.01, trials=10):
     return next(load_file(f))
 
 
-def load(directory, pred_args=None, pred_run=None, cache=True, extractor=None, convertion=None, tqdm=identity):
+def load(
+    directory,
+    pred_args=None,
+    pred_run=None,
+    cache=True,
+    extractor=None,
+    convertion=None,
+    tqdm=identity,
+):
     return list(load_iter(directory, pred_args, pred_run, cache, extractor, convertion, tqdm=tqdm))
 
 
-def load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=None, convertion=None, tqdm=identity):
+def load_iter(
+    directory,
+    pred_args=None,
+    pred_run=None,
+    cache=True,
+    extractor=None,
+    convertion=None,
+    tqdm=identity,
+):
     for d in directory.split(":"):
         for r in _load_iter(d, pred_args, pred_run, cache, extractor, convertion, tqdm):
             yield r
 
 
-def _load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=None, convertion=None, tqdm=identity):
+def _load_iter(
+    directory,
+    pred_args=None,
+    pred_run=None,
+    cache=True,
+    extractor=None,
+    convertion=None,
+    tqdm=identity,
+):
     if extractor is not None:
         cache = False
 
     directory = os.path.normpath(directory)
 
     if not os.path.isdir(directory):
-        raise NotADirectoryError('{} does not exists'.format(directory))
+        raise NotADirectoryError("{} does not exists".format(directory))
 
     cache_runs = GLOBALCACHE[(directory, convertion)] if cache else dict()
 
-    for file in tqdm(sorted(glob.glob(os.path.join(directory, '*.pk')))):
+    for file in tqdm(sorted(glob.glob(os.path.join(directory, "*.pk")))):
         ctime = os.path.getctime(file)
 
         if file in cache_runs and ctime == cache_runs[file].ctime:
@@ -103,11 +128,11 @@ def _load_iter(directory, pred_args=None, pred_run=None, cache=True, extractor=N
         if pred_run is not None and not pred_run(data):
             continue
 
-        if convertion == 'torch_to_numpy':
+        if convertion == "torch_to_numpy":
             data = torch_to_numpy(data)
-        elif convertion == 'args':
+        elif convertion == "args":
             data = args
-        elif convertion == 'file_args':
+        elif convertion == "file_args":
             data = (file, args)
         else:
             assert convertion is None
@@ -130,31 +155,30 @@ def load_grouped(directory, group_by, pred_args=None, pred_run=None, convertion=
         plot(rs, label=param)
 
     """
-    runs = load(directory, pred_args=pred_args, pred_run=pred_run, convertion=convertion, tqdm=tqdm)
+    runs = load(
+        directory,
+        pred_args=pred_args,
+        pred_run=pred_run,
+        convertion=convertion,
+        tqdm=tqdm,
+    )
 
     return group_runs(runs, group_by, tqdm=tqdm)
 
 
 def group_runs(runs, group_by, tqdm=identity):
-    args = args_intersection([r['args'] for r in runs])
+    args = args_intersection([r["args"] for r in runs])
     variants = {
         key: sorted(values, key=keyall)
-        for key, values in args_union([r['args'] for r in runs]).items()
+        for key, values in args_union([r["args"] for r in runs]).items()
         if len(values) > 1 and key not in group_by
     }
     keys = sorted(variants.keys())
-    famillies = sorted({tuple(to_dict(r['args']).get(k, None) for k in keys) for r in runs}, key=keyall)
+    famillies = sorted({tuple(to_dict(r["args"]).get(k, None) for k in keys) for r in runs}, key=keyall)
 
     groups = []
     for vals in tqdm(famillies):
-        rs = [
-            r
-            for r in runs
-            if all(
-                to_dict(r['args']).get(k, None) == v
-                for k, v in zip(keys, vals)
-            )
-        ]
+        rs = [r for r in runs if all(to_dict(r["args"]).get(k, None) == v for k, v in zip(keys, vals))]
         if rs:
             groups.append(({k: v for k, v in zip(keys, vals)}, rs))
     assert len(runs) == sum(len(rs) for _a, rs in groups)

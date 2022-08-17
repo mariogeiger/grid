@@ -16,7 +16,13 @@ def print_info(argss, thr=5):
     for key in sorted({key for r in argss for key in r.keys()}, key=keyf):
 
         values = {r[key] if key in r else None for r in argss}
-        values = [(x, len([1 for r in argss if (x is None and key not in r) or (key in r and r[key] == x)])) for x in values]
+        values = [
+            (
+                x,
+                len([1 for r in argss if (x is None and key not in r) or (key in r and r[key] == x)]),
+            )
+            for x in values
+        ]
         n = len(values)
 
         try:
@@ -49,24 +55,24 @@ def main():
 
     if os.path.isfile("{}/info".format(args.log_dir)):
         try:
-            with open("{}/info".format(args.log_dir), 'rb') as f:
+            with open("{}/info".format(args.log_dir), "rb") as f:
                 info = pickle.load(f)
         except (pickle.PickleError, EOFError):
             pass
         else:
             if isinstance(info, dict):
                 print("last command")
-                if 'cmd' in info:
-                    print(info['cmd'])
-                print("git commit    {}".format(info['git']['log']))
-                print("git status    {}".format(info['git']['status']))
+                if "cmd" in info:
+                    print(info["cmd"])
+                print("git commit    {}".format(info["git"]["log"]))
+                print("git status    {}".format(info["git"]["status"]))
 
-    argss = [pickle.load(open(path, 'rb')) for path in tqdm(glob.glob("{}/*.pk".format(args.log_dir)))]
+    argss = [pickle.load(open(path, "rb")) for path in tqdm(glob.glob("{}/*.pk".format(args.log_dir)))]
     argss = [a for a in argss if a is not None]
     argss = [a for a in argss if pred_args is None or pred_args(a)]
 
     print_info(argss, args.thr)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

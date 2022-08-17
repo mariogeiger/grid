@@ -18,13 +18,10 @@ def main():
     pred_run = eval(args.pred_run) if args.pred_run else None
 
     def tup(args):
-        d = [(key, value) for key, value in to_dict(args).items() if key not in ['pickle', 'output']]
+        d = [(key, value) for key, value in to_dict(args).items() if key not in ["pickle", "output"]]
         return tuple(sorted(d))
 
-    done_dst = {
-        tup(load_args(f))
-        for f in glob.glob("{}/*.pk".format(args.log_dir_dst))
-    }
+    done_dst = {tup(load_args(f)) for f in glob.glob("{}/*.pk".format(args.log_dir_dst))}
 
     for path_src in sorted(glob.glob("{}/*.pk".format(args.log_dir_src))):
         f = load_file(path_src)
@@ -51,5 +48,5 @@ def main():
         done_dst.add(args_src)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

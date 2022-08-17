@@ -7,7 +7,7 @@ from grid import load_file, to_dict
 
 
 def unique_tuple(args):
-    d = [(key, value) for key, value in to_dict(args).items() if key not in ['output']]
+    d = [(key, value) for key, value in to_dict(args).items() if key not in ["output"]]
     return tuple(sorted(d))
 
 
@@ -60,5 +60,5 @@ def main():
         done.add(targs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
