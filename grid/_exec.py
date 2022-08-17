@@ -35,9 +35,9 @@ def launch_command(cmd, prefix, stderr_filename):
 
 def print_output(out, text, path):
     if path is not None:
-        open(path, 'ta').close()
+        open(path, "ta").close()
 
-    for line in iter(out.readline, b''):
+    for line in iter(out.readline, b""):
         output = line.decode("utf-8")
         m = re.findall(r"job (\d+)", output)  # srun: job (\d+) has been allocated resources
         if m and len(text) < 2:
@@ -46,8 +46,12 @@ def print_output(out, text, path):
         print("[{}] {}".format(" ".join(text), output), end="")
 
         if path is not None:
-            with open(path, 'ta') as f:
-                f.write("{} [{}] {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), " ".join(text), line.decode("utf-8")))
+            with open(path, "ta") as f:
+                f.write(
+                    "{} [{}] {}".format(
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), " ".join(text), line.decode("utf-8")
+                    )
+                )
 
     if path is None:
         print("[{}] terminated".format(" ".join(text)))
@@ -72,23 +76,22 @@ def format_value(val):
 
 
 def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
-    command = f"{cmd} --output {{output}}"
-
-    for name, _vals in params:
-        command += " --{0} {{{0}}}".format(name)
 
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
 
-    with open(os.path.join(log_dir, "info"), 'wb') as f:
-        pickle.dump({
-            'cmd': cmd,
-            'params': params,
-            'git': {
-                'log': subprocess.getoutput('git log --format="%H" -n 1 -z'),
-                'status': subprocess.getoutput('git status -z'),
-            }
-        }, f)
+    with open(os.path.join(log_dir, "info"), "wb") as f:
+        pickle.dump(
+            {
+                "cmd": cmd,
+                "params": params,
+                "git": {
+                    "log": subprocess.getoutput('git log --format="%H" -n 1 -z'),
+                    "status": subprocess.getoutput("git status -z"),
+                },
+            },
+            f,
+        )
 
     done_files = set()
     done_param = dict()
@@ -115,9 +118,9 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
                 running = [x for x in running if x.poll() is None]
                 time.sleep(0.2)
 
-        if os.path.isfile('stop'):
+        if os.path.isfile("stop"):
             print(flush=True)
-            print('  >> stop file detected!  <<', flush=True)
+            print("  >> stop file detected!  <<", flush=True)
             print(flush=True)
             break
 
@@ -132,17 +135,20 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
         param_str = " ".join(f"{name}={format_value(val)}" for name, val in param)
 
         if param in done_param:
-            print(f'[{param_str}] {done_param[param]}', flush=True)
+            print(f"[{param_str}] {done_param[param]}", flush=True)
             continue
 
         fp = new_filename(log_dir)
-        cmd = command.format(output=fp, **dict(param))
 
-        p, t1, t2 = launch_command(cmd, f"{fp} {param_str}", os.path.join(log_dir, 'stderr'))
+        cmd_with_params = f"{cmd} --output {fp}"
+        for name, val in param:
+            cmd_with_params += f" --{name} {val}"
+
+        p, t1, t2 = launch_command(cmd_with_params, f"{fp} {param_str}", os.path.join(log_dir, "stderr"))
         running.append(p)
         threads += [t1, t2]
 
-        print(f"[{fp} {param_str}] {cmd}", flush=True)
+        print(f"[{fp} {param_str}] {cmd_with_params}", flush=True)
 
     for x in running:
         x.wait()
@@ -199,7 +205,7 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
 
-    for f, a in load_iter(log_dir, convertion='file_args', tqdm=tqdm):
+    for f, a in load_iter(log_dir, convertion="file_args", tqdm=tqdm):
         a = tuple((name, a[name] if name in a else None) for name, _val in param)
 
         if param == a:
@@ -212,8 +218,6 @@ def exec_one(log_dir, cmd, param, tqdm=identity):
         command += f" --{name} {value}"
 
     p, t1, t2 = launch_command(
-        command,
-        " ".join("{}={}".format(name, format_value(val)) for name, val in param),
-        os.path.join(log_dir, 'stderr')
+        command, " ".join("{}={}".format(name, format_value(val)) for name, val in param), os.path.join(log_dir, "stderr")
     )
     return Job(fp, p, t1, t2)
