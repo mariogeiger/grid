@@ -134,6 +134,8 @@ def exec_grid(log_dir, cmd, params, sleep=0, n=None, tqdm=identity):
 
         param_str = " ".join(f"{name}={format_value(val)}" for name, val in param)
 
+        print(f"search for {param} in {list(done_param.keys())}", flush=True)
+
         if param in done_param:
             print(f"[{param_str}] {done_param[param]}", flush=True)
             continue

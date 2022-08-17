@@ -13,9 +13,9 @@ def main():
 
     params = []
     for x in argv:
-        if x.startswith('--'):
-            if ':' in x:
-                name, typ = x[2:].split(':')
+        if x.startswith("--"):
+            if ":" in x:
+                name, typ = x[2:].split(":")
                 typ = eval(typ)
             else:
                 name = x[2:]
@@ -45,5 +45,5 @@ def main():
     exec_grid(args.log_dir, args.cmd, params, args.sleep, args.n, tqdm)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
