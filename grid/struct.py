@@ -1,7 +1,6 @@
 import argparse
 import json
 
-import torch
 import numpy as np
 
 from grid import load_iter
@@ -48,6 +47,8 @@ def get_structure(r):
     if isinstance(r, (int, float)):
         return (8, "number")
 
+    import torch
+
     if isinstance(r, torch.Tensor) and r.grad_fn is not None:
         print("detected tensor with tree ", r.grad_fn)
         nb = r.numel() * r.element_size()
@@ -60,7 +61,9 @@ def get_structure(r):
         s = r.storage()
         nb = s.size() * s.element_size()
         if r.numel() < s.size():
-            print("Warning: the view of a larger tensor is stored, condider saving a clone to reduce size of the file")
+            print(
+                "Warning: the view of a larger tensor is stored, condider saving a clone to reduce size of the file"
+            )
             return (nb, "tensor!")
         return (nb, "tensor")
 
@@ -121,7 +124,11 @@ def main():
         if args.n and i + 1 >= args.n:
             break
 
-    print("\n\n\n".join(json.dumps(for_human(s), indent=4, sort_keys=True) for s in structures))
+    print(
+        "\n\n\n".join(
+            json.dumps(for_human(s), indent=4, sort_keys=True) for s in structures
+        )
+    )
 
 
 if __name__ == "__main__":
